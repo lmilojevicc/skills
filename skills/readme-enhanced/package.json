@@ -1,0 +1,17 @@
+{
+  "name": "readme-enhanced",
+  "version": "1.0.0",
+  "description": "Agent skill for creating user-first, high-value repository READMEs that act as landing pages",
+  "keywords": [
+    "pi-package",
+    "agent-skills",
+    "readme",
+    "documentation",
+    "shieldcn"
+  ],
+  "author": "",
+  "license": "MIT",
+  "pi": {
+    "skills": ["."]
+  }
+}
