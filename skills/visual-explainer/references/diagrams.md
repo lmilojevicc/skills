@@ -60,6 +60,18 @@ Choose the right tool for the diagram. Mix tools on one page when they serve dif
 
 Match `themeVariables` to the page palette. Never use `theme: 'default'`, `'dark'`, or `'neutral'` — they ignore most variable overrides. Never set `color:` in `classDef` or per-node `style` — it hardcodes text color and breaks dark/light switching.
 
+### Syntax check before delivery
+
+Mermaid fails at render time, so a bad diagram ships as a grey "Syntax error in text" box. Validate in a **temp env**, never in the project:
+
+```bash
+mkdir -p /tmp/mmcheck && cd /tmp/mmcheck
+npm i @mermaid-js/mermaid-cli
+npx mmdc -i diagram.mmd -o out.svg   # exit 0 + svg, else the parse error
+```
+
+Install it whichever way you normally install throwaway npm packages — a temp dir, a version manager, a container. Keep each diagram in its own `.mmd` first — that is what you paste into the page anyway. `mmdc` renders with a real browser, so it catches what the CDN version will actually do.
+
 ### Type selection
 
 | You want to show… | Mermaid type |
