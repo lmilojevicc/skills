@@ -29,11 +29,11 @@ Copy [`templates/options.html`](../templates/options.html):
 
 1. **Header** — title naming the decision ("Which sidebar layout?"), one-sentence context framing what the user is choosing
 2. **Options grid** — 2 columns for 2 options, 3 columns for 3, 2×2 for 4. Wide content (architecture diagrams) gets full-width stacked rows instead
-3. Each option card contains:
-   - **Label** (A, B, C) + name
-   - **Preview** — the visual itself: HTML mockup, Mermaid diagram, SVG, or code block
+3. Each option card (a `--surface` panel, no border) contains:
+   - **Heading**: the letter in `--muted`, then the name, in mono (`<h2><span class="option-letter">A</span> Collapsible sidebar</h2>`). The letter is there so the user can answer "B" in chat
+   - **Preview**: the visual itself on a `--bg` inset: HTML mockup, Mermaid diagram (Pele), SVG, or code block
    - **Tradeoff line** — one sentence, honest about what this option gives up. No option is all-win
-4. **Recommendation** (optional) — a subtle badge or border accent on one option, with one sentence why. Only when the model actually has a defensible position
+4. **Recommendation** (optional): the word "Recommended" in accent text beside the name (no pill badge), and the card ships selected. Give the reason in chat. Only when the model actually has a defensible position
 5. **Response prompt** — one line: "Which direction feels right? Tell me and I'll build it out."
 
 ## Option preview content
@@ -70,9 +70,9 @@ Show enough code to reveal the philosophy — the call site, the types, the erro
 
 Option cards are `<button>` elements (keyboard accessible). Clicking selects — exactly one at a time:
 
-- `.selected` gets the accent border and a ✓ check marker in the header
+- `.selected` gets a 2px accent outline; nothing else changes
 - The recommended option (if any) ships pre-selected
-- **Selection is visual only** — nothing is persisted, recorded, or sent anywhere. The page says so: *"Click a card to mark a favourite — the selection is visual only. Tell me your pick in chat."*
+- **Selection is visual only** — nothing is persisted, recorded, or sent anywhere. The page says so: *"Clicking a card only marks it on this page. Tell me your pick in chat."*
 - The user's chat answer remains the implementation contract, not the click
 
 Full pattern in [`interactivity.md`](interactivity.md) §5 and shipped in [`templates/options.html`](../templates/options.html).

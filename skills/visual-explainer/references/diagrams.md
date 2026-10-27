@@ -6,17 +6,17 @@ Choose the right tool for the diagram. Mix tools on one page when they serve dif
 
 | Content shape | Tool | Why |
 |---|---|---|
-| Flows, pipelines, sequences, state machines, ER, class, mindmaps | **Mermaid** | Automatic layout, editable source, consistent look |
+| Flows, pipelines, sequences, state machines, ER, class, mindmaps | **Mermaid via Pele** | Automatic layout, editable source, follows the page theme |
 | Whiteboard-style sketches, non-technical concepts, hand-drawn feel, content the user will want to edit or extend | **Excalidraw** | Freeform, human, approachable. Users feel ownership over hand-drawn diagrams |
 | Before/after states, layered cross-sections, mass/depth comparisons, editorial visuals Mermaid can't express | **Hand-built SVG/CSS** | Full layout control, editorial weight |
-| 15+ elements | **Hybrid**: small Mermaid overview + CSS detail cards | One big diagram is unreadable |
+| 15+ elements | **Hybrid**: small Mermaid overview + detail panels | One big diagram is unreadable |
 
 **Mermaid vs Excalidraw:**
 
 - Mermaid when the structure is the point — relationships, flow, connections matter more than position
 - Excalidraw when the *feeling* is the point — brainstorming, non-technical explanation, "let me sketch this out"
 - Excalidraw when the user is likely to say "can you add X" — it's editable by hand later
-- Never render Mermaid to an image and call it "a diagram" — either let Mermaid render (interactive) or draw by hand
+- Never render Mermaid to an image and call it "a diagram": let Pele render it, or draw by hand
 
 **Hand-built SVG** beats both when:
 - You need a specific editorial composition (before/after split, layered depth)
@@ -25,52 +25,95 @@ Choose the right tool for the diagram. Mix tools on one page when they serve dif
 
 ---
 
-## Mermaid
+## Mermaid, rendered with Pele
+
+Write diagrams in Mermaid syntax and render them with **[Pele](https://github.com/obsidianmd/pele)**, not Mermaid.js. Pele is a small renderer with no dependencies that supports every Mermaid diagram type and outputs SVG coloured by CSS variables. That means:
+
+- The diagram takes the page tokens directly: no `themeVariables` block, no hex copies of the palette
+- Theme changes recolour it instantly, with no re-render
+- Its default look is already quiet: flat fills, thin borders, no shadows
+- `mount()` fits the diagram to its container, switches wide flowcharts to vertical on phones, and adds zoom when the diagram has to shrink
 
 ### Loading
 
-```html
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+Put the Mermaid source in a `<pre class="mermaid">`. Without JS, or if the CDN fails, the source stays readable as text.
 
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'base',
-    look: 'classic',
-    themeVariables: {
-      primaryColor: '#e8f0ea',
-      primaryBorderColor: '#5b7f6e',
-      primaryTextColor: '#1c2a23',
-      secondaryColor: '#f5efe6',
-      secondaryBorderColor: '#a08a68',
-      secondaryTextColor: '#3a2f20',
-      tertiaryColor: '#eef0f4',
-      tertiaryBorderColor: '#6b7a99',
-      tertiaryTextColor: '#232a3a',
-      lineColor: '#8a94a6',
-      fontSize: '15px',
-      fontFamily: 'var(--font-body)',
-      noteBkgColor: '#fdf6e3',
-      noteTextColor: '#3a2f20',
-      noteBorderColor: '#c9a227'
+```html
+<div class="diagram">
+  <pre class="mermaid" data-label="Short description of the diagram for screen readers">
+flowchart TD
+  A["Login form"] --> B["Auth service"]
+  class B focal
+  </pre>
+</div>
+
+<script type="module">
+  import { mount } from 'https://cdn.jsdelivr.net/npm/pele@1.3.0/dist/pele.js';
+
+  await document.fonts.ready;
+  for (const el of document.querySelectorAll('pre.mermaid')) {
+    const source = el.textContent;
+    const box = document.createElement('div');
+    box.setAttribute('role', 'img');
+    box.setAttribute('aria-label', el.dataset.label || 'Diagram');
+    try {
+      el.replaceWith(box);
+      mount(box, source, { fontSize: 14 });
+    } catch (err) {
+      box.replaceWith(el);   // leave the source visible
+      console.error(err);
     }
-  });
+  }
 </script>
 ```
 
-Match `themeVariables` to the page palette. Never use `theme: 'default'`, `'dark'`, or `'neutral'` — they ignore most variable overrides. Never set `color:` in `classDef` or per-node `style` — it hardcodes text color and breaks dark/light switching.
+Pin an exact version. Pele is new and moves fast; bump the pin deliberately after checking a release.
+
+### Theming
+
+Map the page tokens onto Pele's variables once, on the container:
+
+```css
+.diagram {
+  --pele-bg: var(--surface);
+  --pele-fg: var(--ink);
+  --pele-muted: var(--muted);
+  --pele-line: var(--muted);
+  --pele-surface: var(--bg);
+  --pele-surface-alt: var(--surface-2);
+  --pele-border: var(--line);
+  --pele-accent: var(--accent);
+  --pele-font: var(--font-sans);
+  --pele-font-mono: var(--font-mono);
+  --pele-heading-weight: 500;
+  --pele-title-weight: 500;
+  --pele-radius: 4px;
+}
+/* The focal node: `class X focal` in the source adds .focal to the node */
+.pele-node.focal :is(rect, path, polygon, circle, ellipse) { stroke: var(--accent); stroke-width: 2px; }
+```
+
+- Mark the focal path with `class A,B focal` in the source. One or two nodes, never more
+- **Never** set colours in the source with `style`, `classDef … fill:` or `linkStyle`. Pele keeps those fixed, so they break dark mode
+- Charts drawn by Pele (pie, xychart) use `--pele-series-1…8`. Set `--pele-series-1` to `var(--accent)` and the rest to greys, or draw the chart by hand (see [`charts.md`](charts.md))
+- Class names for finer styling: `.pele-node`, `.pele-edge`, `.pele-edge-label`, `.pele-cluster`, `.pele-label`. Target one node with `.pele-node[data-id="start"]`
 
 ### Syntax check before delivery
 
-Mermaid fails at render time, so a bad diagram ships as a grey "Syntax error in text" box. Validate in a **temp env**, never in the project:
+A bad diagram renders as an error message, so check each diagram before it ships. Pele's `render()` throws a `PeleError` with the line at fault, and it runs in Node. Check in a **temp directory**, never in the project:
 
 ```bash
-mkdir -p /tmp/mmcheck && cd /tmp/mmcheck
-npm i @mermaid-js/mermaid-cli
-npx mmdc -i diagram.mmd -o out.svg   # exit 0 + svg, else the parse error
+mkdir -p "$TMPDIR/pelecheck" && cd "$TMPDIR/pelecheck"
+npm i pele@1.3.0
+node --input-type=module -e "
+  import { render } from 'pele';
+  import { readFileSync } from 'node:fs';
+  try { render(readFileSync(process.argv[1], 'utf8')); console.log('ok'); }
+  catch (e) { console.error(e.message); process.exit(1); }
+" diagram.mmd   # exit 0 + "ok", else the parse error and the line
 ```
 
-Install it whichever way you normally install throwaway npm packages — a temp dir, a version manager, a container. Keep each diagram in its own `.mmd` first — that is what you paste into the page anyway. `mmdc` renders with a real browser, so it catches what the CDN version will actually do.
+Keep each diagram in its own `.mmd` first; that is what you paste into the page. The check uses the same parser the page uses, so a pass here means the page will render.
 
 ### Type selection
 
@@ -110,28 +153,12 @@ Install it whichever way you normally install throwaway npm packages — a temp 
 
 ### Complexity budgets
 
-- Max 10–12 nodes per Mermaid diagram. Beyond that: split or use hybrid pattern (overview Mermaid + detail cards)
+- Max ~9 nodes per Mermaid diagram. Beyond that: split, or use the hybrid pattern (Mermaid overview + detail panels)
 - Max 5 lifelines in a sequence diagram
 - Max 8 entities in an ER diagram
 - Subgraphs group related nodes: `subgraph Auth ... end`
 
-### CSS overrides (after render)
-
-```css
-.mermaid .nodeLabel { color: var(--color-ink) !important; font-family: var(--font-body) !important; }
-.mermaid .edgeLabel { color: var(--color-muted) !important; background-color: var(--color-paper) !important; font-family: var(--font-mono) !important; font-size: 12px !important; }
-.mermaid .edgeLabel rect { fill: var(--color-paper) !important; }
-.mermaid .focal rect, .mermaid .focal circle, .mermaid .focal polygon {
-  stroke: var(--color-accent) !important;
-  stroke-width: 2px !important;
-}
-```
-
-Because these reference CSS variables, a theme toggle re-colors the rendered SVG instantly — no re-render needed for the accent stroke.
-
-**Theme change:** Mermaid initializes once and can't react to CSS-only theme changes. On `themechange`, strip `data-processed`, restore the raw source from `textContent`, and call `mermaid.run()` again with the new `themeVariables`. Full pattern in [`interactivity.md`](interactivity.md) §1 and shipped in [`templates/diagram.html`](../templates/diagram.html).
-
-Never define a page-level `.node` class — Mermaid uses it internally. Use namespaced classes (`.ve-node`, `.ve-card`).
+Never define a page-level `.node` class; use namespaced classes (`.ve-node`, `.ve-card`).
 
 ---
 
@@ -152,11 +179,11 @@ Load the Excalidraw npm package from CDN and render an editable canvas in an ifr
     return React.createElement(Excalidraw, {
       initialData: {
         elements: [
-          { type: 'rectangle', x: 100, y: 100, width: 200, height: 80, backgroundColor: '#e8f0ea', strokeColor: '#5b7f6e', strokeWidth: 2, roughness: 1 },
+          { type: 'rectangle', x: 100, y: 100, width: 200, height: 80, backgroundColor: '#f1f1ef', strokeColor: '#171717', strokeWidth: 2, roughness: 1 },
           { type: 'text', x: 130, y: 125, width: 140, height: 30, text: 'User Request', fontSize: 18, fontFamily: 1 },
           // ... more elements
         ],
-        appState: { viewBackgroundColor: '#fafaf8', currentItemFontFamily: 1 }
+        appState: { viewBackgroundColor: '#fafaf9', currentItemFontFamily: 1 }
       },
       langCode: 'en',
       viewModeEnabled: false
@@ -176,11 +203,11 @@ Render the Excalidraw aesthetic as hand-crafted SVG: rough strokes, hand-written
 ```svg
 <svg viewBox="0 0 800 400" style="font-family: 'Comic Neue', 'Segoe Print', cursive;">
   <!-- Hand-drawn box with rough stroke -->
-  <path d="M100,100 L300,96 L302,180 L98,184 Z" fill="#e8f0ea" stroke="#5b7f6e" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M100,100 L300,96 L302,180 L98,184 Z" fill="#f1f1ef" stroke="#171717" stroke-width="2.5" stroke-linejoin="round"/>
   <text x="200" y="145" text-anchor="middle" font-size="18">User Request</text>
   <!-- Hand-drawn arrow -->
-  <path d="M305,140 C350,138 360,142 395,140" fill="none" stroke="#5b7f6e" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M390,132 L398,140 L390,148" fill="none" stroke="#5b7f6e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M305,140 C350,138 360,142 395,140" fill="none" stroke="#171717" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M390,132 L398,140 L390,148" fill="none" stroke="#171717" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 ```
 
@@ -212,8 +239,8 @@ When the user wants to edit later in the Excalidraw app, write a `.excalidraw` J
       "angle": 0,
       "x": 100,
       "y": 100,
-      "strokeColor": "#5b7f6e",
-      "backgroundColor": "#e8f0ea",
+      "strokeColor": "#171717",
+      "backgroundColor": "#f1f1ef",
       "width": 200,
       "height": 80,
       "seed": 1,
@@ -228,7 +255,7 @@ When the user wants to edit later in the Excalidraw app, write a `.excalidraw` J
   ],
   "appState": {
     "gridSize": null,
-    "viewBackgroundColor": "#fafaf8"
+    "viewBackgroundColor": "#fafaf9"
   },
   "files": {}
 }
@@ -285,15 +312,17 @@ Horizontal line with events as dots, alternate above/below to save space. Use fo
 
 Copy [`templates/diagram.html`](../templates/diagram.html). Structure:
 
-1. **Header** — eyebrow (small mono uppercase), title, one-sentence subtitle
-2. **Diagram container** — the visual centerpiece, card-framed, max ~70vh so it's visible without scrolling
+1. **Header** — `h1` naming what is shown, one-sentence lede. Nothing above the title
+2. **Diagram panel** — the centerpiece on a `--surface` panel, max ~70vh so it's visible without scrolling
 3. **Optional legend** — horizontal strip below the diagram, not floating inside it
 4. **Optional summary** — 2–3 short takeaway bullets, not a paragraph
-5. **Footer** — tiny mono colophon
+5. **Footer** — one small muted line
 
-For 4+ major sections, add a sticky TOC nav (see visual-explainer's `responsive-nav.md` pattern: fixed-position sidebar or top bar with anchor links).
+Keep a page to one or two visuals. If it needs four sections, it is two pages.
 
-**Accessibility**: every diagram gets `<title>` and `<desc>`. SVG diagrams get `role="img"` and `aria-labelledby`.
+**Accessibility**: Pele diagrams get a `data-label` on the `<pre>`, which becomes the `aria-label`. Hand-built SVG gets `role="img"`, `<title>`, `<desc>` and `aria-labelledby`.
+
+**Colours in hand-built SVG**: use the tokens in attributes (`fill="var(--bg)"`, `stroke="var(--line)"`), so the theme toggle works with no script. Nodes are `--bg` on the `--surface` panel with a `--line` border; connectors are `--muted`; the focal node gets an `--accent` stroke.
 
 ---
 
@@ -306,4 +335,5 @@ For 4+ major sections, add a sticky TOC nav (see visual-explainer's `responsive-
 - Vertical `writing-mode` text on arrows
 - More than 2 accent-colored nodes ("everything is important" = nothing is)
 - Diagonal slanted connectors between off-axis nodes
-- One giant diagram with 20+ nodes when overview + detail cards would work
+- One giant diagram with 20+ nodes when overview + detail panels would work
+- Colours hard-coded in Mermaid source (`style`, `classDef fill:`); they won't follow the theme

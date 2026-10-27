@@ -1,206 +1,92 @@
-# Style — design system for visual explainer pages
+# Style — one quiet system for every page
 
-Every page commits to one aesthetic direction before HTML is written. This file encodes the Hallmark system applied to explainer pages: warm editorial palette, Fraunces display, hairlines instead of card borders, one accent used sparingly. Simple, warm, crowd-appealing.
+Explainer pages share one look: plain, minimal, and easy to read. The visual carries the meaning, and the page around it stays out of the way. The rules follow the anti-slop house style of [taste-skill](https://github.com/leonxlnx/taste-skill): no ornaments, few sizes, one ground, one ink, one accent. There is one deliberate exception: **headings are set in monospace.**
 
-## Palette — warm-oat editorial
+Templates in [`../templates/`](../templates/) already implement everything below. Start from one and change content, not styling.
 
-OKLCH only for CSS custom properties. Tinted paper, tinted ink, one warm accent. No pure black or white. When colors go into SVG presentation attributes, Mermaid `themeVariables`, Chart.js options, or data-URI favicons, use the hex equivalents below — those contexts parse OKLCH inconsistently.
+## Type — sans text, mono headings
 
-```css
-:root {
-  --color-paper:    oklch(96%  0.012 80);   /* #f8f5ef — page background, warm oat */
-  --color-paper-2:  oklch(93%  0.014 80);   /* #eee9de — surface / container */
-  --color-rule:     oklch(82%  0.010 80);   /* #cfc9bc — hairlines */
-  --color-neutral:  oklch(56%  0.008 80);   /* #88817a — secondary text */
-  --color-muted:    oklch(40%  0.008 70);   /* #58534c — labels, captions */
-  --color-ink:      oklch(18%  0.010 60);   /* #2b2824 — primary text */
-  --color-accent:   oklch(55%  0.19  45);   /* #c23c14 — terracotta, ONE accent */
-  --color-focus:    oklch(55%  0.19  55);   /* #d66a40 — focus ring */
-  --color-series-1: oklch(45%  0.05  60);   /* #6f6352 — secondary data series */
-  --color-series-2: oklch(60%  0.04  70);   /* #9a8f79 — tertiary data series */
-  --color-series-3: oklch(72%  0.03  75);   /* #bcb3a4 — quaternary data series */
-}
-```
+Two faces from one superfamily, so they match without effort:
 
-**Hex equivalents** (for SVG attributes, Mermaid, Chart.js, favicons):
-
-| Token | Hex | Token | Hex |
+| Role | Face | Size | Weight |
 |---|---|---|---|
-| paper | `#f8f5ef` | muted | `#58534c` |
-| paper-2 | `#eee9de` | ink | `#2b2824` |
-| rule | `#cfc9bc` | accent | `#c23c14` |
-| neutral | `#88817a` | series-1/2/3 | `#6f6352` / `#9a8f79` / `#bcb3a4` |
-
-### Accent discipline
-
-The accent is a **highlighter, not a colour block**. It occupies **≤ 3% of any viewport**:
-
-- The focal bar in a chart, the focal node in a diagram
-- The recommended option's border or letter marker
-- Eyebrow text and takeaway bullet markers
-- Focus rings and active nav states
-
-Never: accent as a background fill, accent on more than 1–2 elements per visual, accent as a decorative gradient.
-
-### Dark mode (only when the content calls for it)
-
-```css
-:root {
-  --color-paper:    oklch(14%  0.008 80);
-  --color-paper-2:  oklch(18%  0.010 80);
-  --color-rule:     oklch(30%  0.008 80);
-  --color-neutral:  oklch(58%  0.008 80);
-  --color-muted:    oklch(72%  0.006 80);
-  --color-ink:      oklch(94%  0.006 80);
-  --color-accent:   oklch(65%  0.16  55);   /* lighten + desaturate slightly */
-  --color-focus:    oklch(70%  0.19  55);
-}
-```
-
-Never switch the hue between modes — only lightness and chroma move. Elevation: higher surfaces are *lighter* in dark mode.
-
-### Forbidden palettes
-
-- `#8b5cf6`, `#7c3aed`, `#a78bfa` (indigo/violet) as primary
-- `#d946ef` (fuchsia)
-- Cyan + magenta + purple neon combos
-- Gradient-mesh blobs, purple-to-cyan gradients
-- Pure `#000` or `#fff` anywhere
-- Flat grey (zero chroma) — always tint toward the anchor hue (80)
-
-## Typography — 2+1 faces
-
-**Fraunces (display) + IBM Plex Sans (body) + JetBrains Mono (outlier).** Three families is the ceiling. The outlier is a register, not a third surface — it tags technical content: labels, captions, axis ticks, code, colophon.
-
-```css
-:root {
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-body:    "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    "JetBrains Mono", ui-monospace, monospace;
-}
-```
-
-Google Fonts load (all weights used, `display=swap`):
+| Page title (`h1`) | IBM Plex Mono | `--fs-title` (28–40px fluid) | 500 |
+| Section heading, option name (`h2`) | IBM Plex Mono | `--fs-head` (18px) | 500 |
+| Figures in KPIs, code, IDs | IBM Plex Mono | as needed | 500 |
+| Body, lede, takeaways | IBM Plex Sans | `--fs-body` (16px) | 400 |
+| Labels, captions, axis ticks, legends, notes | IBM Plex Sans | `--fs-small` (13px) | 400 |
 
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
 ```
 
-### Type scale — major third (1.25)
+- **Mono only for headings, figures and code.** Labels, axis ticks, captions and legends are sans. Mono labels everywhere is the costume this system avoids.
+- Headings: tracking `-0.03em`, line height 1.15, sentence case, two lines at most. `h1` max width `22ch`.
+- Body: line height 1.55, measure 56–64ch, running text in full `--ink`. Grey (`--muted`) is only for secondary notes.
+- Four sizes on a page. Do not add a fifth to solve a layout problem.
+- `font-variant-numeric: tabular-nums` on every number that lines up or updates.
+- Left-aligned. Nothing centred except the diagram itself.
 
-```css
-:root {
-  --text-xs:   0.64rem;   /* 10.24px — axis ticks, colophon */
-  --text-sm:   0.8rem;    /* 12.8px  — labels, captions */
-  --text-base: 1rem;      /* 16px    — body */
-  --text-md:   1.25rem;   /* 20px    — option names */
-  --text-lg:   1.5625rem; /* 25px    — section headings */
-  --text-xl:   1.9531rem; /* 31.25px — page title */
-  --text-2xl:  2.4414rem;
-}
-```
+## Colour — one ground, one ink, one accent
 
-| Role | Size | Weight | Face |
+Hex tokens. The same values go into CSS, SVG attributes, Pele variables and Chart.js, so there is one palette to keep in sync.
+
+| Token | Light | Dark | Use |
 |---|---|---|---|
-| Page title (h1) | `--text-xl` | 600 | Fraunces |
-| Section heading (h2) | `--text-lg` | 600 | Fraunces |
-| Option names, node names | `--text-md` | 600 | IBM Plex Sans |
-| Body text | `--text-base` | 400 | IBM Plex Sans |
-| Labels, axis ticks, captions | `--text-sm` / `--text-xs` | 400–500 | JetBrains Mono, uppercase, `letter-spacing: 0.08em` |
-| Eyebrow | `--text-xs` | 500 | JetBrains Mono, uppercase, tracked, accent color |
+| `--bg` | `#fafaf9` | `#111111` | Page ground |
+| `--surface` | `#f1f1ef` | `#1b1b1b` | Panels: the diagram, chart, KPI and option surfaces |
+| `--surface-2` | `#e6e6e3` | `#262626` | Hover on a surface, mock elements, subgraphs |
+| `--line` | `#d6d6d2` | `#333333` | Node borders, KPI dividers, chart gridlines. Never section dividers |
+| `--bar` | `#cfcfca` | `#444444` | Non-focal data marks |
+| `--ink` | `#171717` | `#ececec` | Text, chart baseline |
+| `--muted` | `#5c5c5c` | `#a1a1a1` | Secondary text, labels, connectors. Passes 4.5:1 on `--bg` and `--surface` |
+| `--accent` | `#0b62d6` | `#5b9cf5` | The focal element, focus ring, nothing else |
 
-### Typography rules
+Dark tokens live under `html[data-theme="dark"]` and under `@media (prefers-color-scheme: dark) { html:not([data-theme]) { … } }`. Only lightness moves between modes, never the hue.
 
-- **Body weight contrast**: headings at 600–700 against body 400 — at least 200 units apart, never 400 vs 500
-- **Line-height**: display 1.2, body 1.6
-- **Measure**: `max-width: 65ch` for prose blocks
-- **Tabular numbers** on all data: `font-variant-numeric: tabular-nums`
-- **Never** all-caps paragraphs, justified text, or letter-spacing above 0.05em on body
-- **Never** synthetic bold — load every weight the CSS uses
-- **No gradient text** on headings
+**Accent discipline.** The accent marks what the user should look at first: the focal bar, the focal node or path, the recommended option. One or two elements per visual. Everything else is ink, muted or `--bar`. Never use the accent as a background block, on chrome, or for decoration.
 
-### Banned fonts
+**Banned:** cream or beige ground with terracotta or rust (the assistant look), violet, indigo and fuchsia, neon on dark, gradients of any kind, a different hue for every bar or node.
 
-Inter, Roboto, Open Sans, Lato, Poppins, Montserrat, DM Sans, Arial, Helvetica, bare system-ui, Merriweather, Lora as body, Courier New as body.
+## Surfaces and space
 
-## Layout — left-biased editorial
+- **Tone steps, not lines.** A panel is `--surface` on `--bg`. No borders around panels, no hairline rules between sections, no shadows.
+- **One radius:** `--radius: 6px` for panels and cards, 4px for small inner parts. No pills.
+- **Group, don't box.** A KPI row is one surface split by 1px gaps, not separate cards. No card inside a card.
+- **Frame:** `main` max width 960px, 24px side padding (16px on phones), equal on both sides. Sections are 64px apart (48px on phones); gaps inside a section are 8–24px.
+- `html, body { overflow-x: clip; }` and `min-width: 0` on grid and flex children. No horizontal scroll at any width.
 
-- **Primary axis: left.** Headers left-aligned, content left-flush. No centred-everything heroes
-- **Hairlines, not card borders.** Section separation via thin rules (`--color-rule` at 1px), not heavy borders. Diagram containers use `--color-paper-2` background + hairline border
-- **No shadows** — depth comes from weight, size, and color contrast. If absolutely needed, one whisper shadow: `0 1px 2px oklch(20% 0.01 80 / 0.05)`
-- **Asymmetric rhythm** — vary section spacing. Generous top, tight bottom or vice versa. Never equal padding everywhere
-- **Spacing scale** (4pt base, named by role):
+## No ornaments
 
-```css
-:root {
-  --space-xs:  0.5rem;   /*  8px */
-  --space-sm:  0.75rem;  /* 12px */
-  --space-md:  1rem;     /* 16px */
-  --space-lg:  1.5rem;   /* 24px */
-  --space-xl:  2.5rem;   /* 40px */
-  --space-2xl: 4rem;     /* 64px */
-  --space-3xl: 6rem;     /* 96px */
-}
-```
+Each of these reads as generated. Leave it out and let space, size and the visual do the work.
 
-- Use `gap` for sibling spacing, `margin` only for optical adjustments
-- `html { overflow-x: clip; }` and `body { overflow-x: clip; }` at the top — never `hidden` (breaks sticky)
-- `min-width: 0` on all grid/flex children
-- Max content width 1100px, generous horizontal padding
-- Border radius: 6–8px max. Never `rounded-2xl`
+| Don't | Instead |
+|---|---|
+| Eyebrow label above the title (`DATA · LAST 6 MONTHS`) | Put the scope in the title: "Monthly active users, January to June" |
+| Tiny uppercase letter-spaced labels | Sentence case at 13px |
+| Pill badges, chips | Plain text, in accent if it marks the recommendation |
+| Index numbering (01 / 02 / 03) | Order by position. A real `<ol>` if the order matters |
+| Hairline dividers between sections | Space |
+| Shadows and glows on things at rest | A tone step. Shadows only on things that float |
+| Gradients, glass, blur | Flat fills |
+| Icons in tinted circles, emoji | Words, or nothing |
+| Coloured accent word in a heading | The words carry the emphasis |
+| Decorative bullets in accent | An en dash in `--muted` |
 
-### Bans
+## Page structure
 
-- Centre-aligned everything
-- Card-in-card (bordered container inside bordered container)
-- Three equal-width icon-tile grids — vary column widths or use a different pattern
-- `z-index: 9999` — use the named scale: base 1, raised 10, dropdown 100, sticky 200, modal 400, toast 500, tooltip 600
-- Equal padding on everything
-- Box shadows as the depth system
+1. **Header:** `h1` naming what is shown, then one plain sentence (`.lede`). Nothing above the title.
+2. **The visual:** on a `--surface` panel and visible in the first viewport. It is the hero, not the header.
+3. **Legend or source note** under the panel, 13px muted, never floating inside the visual.
+4. **"What to notice":** `h2` and 2–3 short takeaways. No paragraphs; the explanation stays in chat.
+5. **Footer:** one 13px muted line, no rule.
+
+The theme toggle is a 36px icon button, top right: monitor for system (the default), sun for light, moon for dark. Muted until hover, hidden until JS runs.
 
 ## Motion
 
-Motion tokens, easing curves, entrance animation, draw-in, and count-up patterns live in [`interactivity.md`](interactivity.md) — read it when wiring any page.
+Restrained: one staggered fade-up (`.ve-in`, 400ms, 60ms steps) on the first-screen blocks, a grow-in for bars, a draw-in for hand-built connectors. `transform` and `opacity` only. Under `prefers-reduced-motion` everything is instant. No loops, pulses or hover lifts. Patterns are in [`interactivity.md`](interactivity.md).
 
-- Default: restrained. Entrance stagger on first-viewport elements, grow-in for bars, draw-in for SVG lines
-- Max 500ms per animation, `--ease-out` / `--ease-in-out` only, `transform` and `opacity` only
-- Always `prefers-reduced-motion: reduce` — collapse to instant
-- Never: continuous glow, pulse, breathing, bounce on static content
+## Favicon
 
-## Visual hierarchy
-
-- The main idea visible in the first viewport — no scrolling to find the point
-- The diagram/chart is the hero, not the header
-- Sparse prose: labels, captions, ≤ 3 takeaway bullets. No paragraphs of explanation — the explanation lives in chat
-- Footer: one hairline rule + tiny mono colophon line
-
-## Page skeleton
-
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Page title</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='oklch(55%25 0.19 45)'/></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root { /* tokens above */ }
-    html { overflow-x: clip; }
-    body { overflow-x: clip; }
-    /* page styles */
-  </style>
-  <!-- CDN scripts only if needed (Mermaid, Excalidraw, Chart.js) -->
-</head>
-<body>
-  <main>...</main>
-</body>
-</html>
-```
-
-The favicon is a data-URI SVG — self-contained, no 404.
+A data-URI SVG, an ink square: `<rect width='16' height='16' rx='3' fill='%23171717'/>`. No 404.

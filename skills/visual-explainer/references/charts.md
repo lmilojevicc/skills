@@ -1,158 +1,168 @@
 # Charts — visualizing numerical data
 
-Charts are for data the user is **actively exploring**. Never generate a chart just because a data file exists.
+Charts are for data the user is **actively exploring**. Never draw a chart just because a data file exists.
 
 ## Pre-flight: does this data deserve a chart?
 
 | Situation | Answer |
 |---|---|
 | User asks about trends, comparisons, distributions, or "the shape of the data" | Chart |
-| User asks "what's the biggest/smallest/fastest" | Chart (bar or summary) |
+| User asks "what's the biggest/smallest/fastest" | Chart (bar or headline number) |
 | User is comparing categories or time periods | Chart |
-| User asked a yes/no or single-number question | No chart — answer in text |
-| Data has fewer than 4–5 comparable values | No chart — a sentence or small table |
+| User asked a yes/no or single-number question | No chart: answer in text |
+| Data has fewer than 4–5 comparable values | No chart: a sentence or small table |
 | Data just exists in a file, user hasn't engaged with it | No chart |
 
 ## Chart type selection
 
-| You want to show… | Use | Rules |
+| Question | Use | Rules |
 |---|---|---|
-| Discrete categories compared (sales by month, features by adoption) | **Bar / column** | 4–8 bars. More → group or split. Horizontal bars when labels are long |
-| Trends over time (growth, latency over releases) | **Line** | 4–12 points. Max 5 series. Only the focal series gets vertex dots |
-| Parts of a whole (market share, budget split) | **Pie / donut** | 2–6 slices. Never 3D. Never for comparison (bar is better) |
-| Two-variable relationship or distribution | **Scatter** | Max ~30 points. Mark outliers |
-| Multiple entities scored on criteria (skill matrices, benchmarks) | **Radar** | Max 5 axes, max 5 series, 1 focal |
-| Hierarchy with quantities (conversion funnel, org size) | **Pyramid / funnel** | Max 6 layers |
-| Single value that matters | **Big number** (stat card) | One number, styled prominently. More honest than a chart for 1 data point |
+| How much per category or period? | **Columns** | 4–8 bars. Horizontal bars when labels are long, sorted by value |
+| Is it moving over time? | **Line** | 4–12 points, straight segments. One series is normal, three is the most |
+| What share of a whole? | **100% stacked bar** or thin ring | 2–5 parts. Never 3D, never labels on slices |
+| Do two variables relate? | **Scatter** | Up to ~30 points. Label the outliers |
+| How far to a target? | **Progress bar** | Both ends labelled, fill is the true ratio |
+| One value that matters | **Headline number** | A KPI cell, no chart. More honest than a chart of one point |
 
-## Honesty rules — non-negotiable
+## Honesty rules (non-negotiable)
 
-1. **Y-axis starts at zero** for bar charts. A truncated axis distorts magnitude comparison
-2. **No fabricated data.** Only chart numbers that actually exist in the conversation, file, or codebase. If the user didn't supply a number, don't invent one
-3. **Polyline, not spline** — smoothed curves lie about sampled data
-4. **Label the axes** or make units obvious. A chart without units is decoration
-5. **No 3D** — ever. No shadows, no extrusions, no depth effects
-6. **Accent ≤ 1 bar/series/slice** — the focal point. Everything else muted
-7. **Don't connect discontinuous data** across gaps
+1. **Bars start at zero.** A truncated axis distorts magnitude
+2. **No invented data.** Only numbers from the conversation, a file or the codebase. Totals and deltas are computed from the values shown, so they add up
+3. **Straight segments, not splines.** A smoothed curve invents values between samples
+4. **Units are always clear**: on the axis, in the title, or in the value labels
+5. **No 3D**, no shadows, no gradients on marks
+6. **Accent on one mark**: the focal bar, series or slice. Everything else `--bar`, `--muted` or ink
+7. **Don't connect across gaps** in discontinuous data
+8. **Every relative figure names its baseline**: "+44% on January", not "+44%"
+
+## Look
+
+- **One hue per chart.** The accent goes on the main data element; the rest are neutral (`--bar`). Never a hue per bar
+- **Bars** have square corners. Gap between bars about a quarter of the bar width
+- **Baseline**: one 1px line in `--ink`. No y-axis line, no box around the plot
+- **Gridlines**: none when value labels sit on the marks; otherwise 3–5 horizontal lines, 1px, `--line`. Never vertical gridlines
+- **Ticks**: 13px sans in `--muted`, round even steps (0 / 150 / 300 / 450 / 600), top tick above the maximum. X labels flat, never rotated
+- **Lines**: 2px, no point markers except an 8px dot on the hovered or last point. No area fill, or a flat 12% tint at most
+- **Legend**: none for a single series (the title names it). Otherwise small swatches under the chart, each the mark it explains, scaled down
+- **Annotate the event that matters**: a spike or step gets a short label naming its cause ("Launch")
 
 ## Rendering choice
 
-### HTML bars (default — hoverable, animated, zero dependencies)
+### HTML bars (default: hoverable, animated, no dependencies)
 
-Copy the pattern from [`templates/chart.html`](../templates/chart.html). Bars are flex children styled with CSS custom properties, which gives hover dimming, tooltips, and grow-in animation for free — no JS, no CDN.
+Copy the pattern from [`templates/chart.html`](../templates/chart.html). Bars are flex children, which gives hover dimming, tooltips and grow-in with no JS and no CDN:
 
 - Bar heights are percentages of the tallest bar (`style="height: 62%"`)
-- The focal bar gets class `focal` — accent fill, accent value label
-- Each bar column carries a `.bar-tip` tooltip (pure CSS, shows on hover/focus) and `tabindex="0"` for keyboard access
-- Bars grow in on load via `.ve-bar`; reduced-motion users see them static
-- Hovering a column dims siblings (`.chart:hover .bar-col:not(:hover) .bar { opacity: 0.25; }`)
+- The focal column gets class `focal`: accent fill and accent value label
+- Each column has a `.bar-tip` tooltip and `tabindex="0"`
+- Bars grow in via `.ve-bar`; reduced-motion users see them static
+- Value labels above the bars replace the y-axis
 
-This is the right choice for explainer-scale charts (≤ 8 bars) because every interactive affordance works without JavaScript or CDN dependencies.
+Right for explainer-scale charts (≤ 8 bars).
 
-### Hand-built SVG (when you need axes, gridlines, or exact coordinates)
+### Hand-built SVG (lines, scatter, axes)
 
-Full layout control for line charts, scatter, radar — anything the HTML-bar pattern can't express. SVG patterns below stay available. Add the draw-in animation class `ve-draw` with `pathLength="1"` to lines (see [`interactivity.md`](interactivity.md)).
-
-Bar chart pattern:
+Full control for anything the HTML bars can't express. Use the tokens in attributes so the theme toggle works without a re-render:
 
 ```svg
-<svg viewBox="0 0 1000 500" role="img" aria-labelledby="chart-title chart-desc">
-  <title id="chart-title">Monthly active users</title>
-  <desc id="chart-desc">Bar chart showing monthly active users from January to June</desc>
+<svg viewBox="0 0 800 320" role="img" aria-labelledby="chart-title chart-desc" style="width: 100%; height: auto;">
+  <title id="chart-title">p95 latency by release</title>
+  <desc id="chart-desc">Line chart of p95 latency across six releases; it drops from 420 to 180 ms at v2.3</desc>
 
-  <!-- Gridlines (4-6 horizontal) -->
-  <line x1="80" y1="100" x2="960" y2="100" stroke="rgba(45,49,66,0.08)" stroke-width="0.8"/>
-  <!-- ... -->
+  <!-- 3–5 horizontal gridlines -->
+  <g stroke="var(--line)" stroke-width="1">
+    <line x1="56" y1="40"  x2="780" y2="40"/>
+    <line x1="56" y1="140" x2="780" y2="140"/>
+  </g>
+  <!-- Baseline -->
+  <line x1="56" y1="280" x2="780" y2="280" stroke="var(--ink)" stroke-width="1"/>
 
-  <!-- Y-axis labels: right-aligned mono, muted -->
-  <text x="72" y="104" text-anchor="end" font-size="12" font-family="var(--font-mono)" fill="var(--text-dim)">1000</text>
-  <!-- ... -->
+  <!-- Y ticks: right-aligned, sans, muted -->
+  <g font-family="var(--font-sans)" font-size="13" fill="var(--muted)" text-anchor="end">
+    <text x="48" y="44">600</text>
+    <text x="48" y="144">300</text>
+    <text x="48" y="284">0</text>
+  </g>
 
-  <!-- Bars: pitch ~110px, bar ~72px -->
-  <rect x="140" y="280" width="72" height="140" fill="rgba(79,93,117,0.15)" stroke="var(--text-dim)" stroke-width="1"/>
-  <!-- Focal bar: accent fill/stroke -->
-  <rect x="250" y="180" width="72" height="240" fill="rgba(214,122,72,0.12)" stroke="var(--accent)" stroke-width="1"/>
+  <!-- Focal series: accent, 2px, straight segments, draws in -->
+  <polyline class="ve-draw" pathLength="1" points="80,140 220,150 360,160 500,220 640,226 760,230"
+            fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="760" cy="230" r="4" fill="var(--accent)"/>
 
-  <!-- Value labels above bars -->
-  <text x="176" y="272" text-anchor="middle" font-size="12" font-family="var(--font-mono)" fill="var(--text-dim)">420</text>
-  <!-- ... -->
+  <!-- Comparison series, if any: neutral, no dots -->
+  <polyline points="80,180 220,182 360,186 500,190 640,192 760,196"
+            fill="none" stroke="var(--bar)" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Annotation -->
+  <line x1="500" y1="40" x2="500" y2="280" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="506" y="54" font-family="var(--font-sans)" font-size="13" fill="var(--muted)">v2.3 cache</text>
 </svg>
 ```
 
-Plot area margins: left 80px, bottom 60px, top 40px, right 40px.
+Plot margins: left 56px, bottom 40px, top 32px, right 24px.
 
-Line chart pattern:
+### Chart.js (many points, several series, zoom)
 
-```svg
-<!-- Focal series -->
-<polyline points="140,320 300,280 460,240 620,200 780,160"
-          fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round"/>
-<circle cx="140" cy="320" r="4" fill="var(--accent)"/>
-<!-- ... dots only on focal series ... -->
-
-<!-- Non-focal series: thinner, no dots -->
-<polyline points="140,400 300,380 460,360 620,340 780,320"
-          fill="none" stroke="var(--series-2)" stroke-width="1.2" stroke-linejoin="round"/>
-```
-
-### Chart.js (for interactive dashboards, many data points, or zoomable charts)
-
-Use when the chart is complex — many series, tooltips matter, or the user will hover for values:
+Only when the chart is genuinely complex. Read colours from the tokens, and redraw on `themechange`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<canvas id="chart" width="600" height="300"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
-  new Chart(document.getElementById('chart'), {
-    type: 'bar',
-    data: { /* real data */ },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: textColor } } },
-      scales: {
-        x: { ticks: { color: textColor }, grid: { color: gridColor } },
-        y: { ticks: { color: textColor }, grid: { color: gridColor }, beginAtZero: true }
+  let chart;
+  const token = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  function draw() {
+    if (chart) chart.destroy();
+    Chart.defaults.font.family = token('--font-sans');
+    Chart.defaults.color = token('--muted');
+    chart = new Chart(document.getElementById('data-chart'), {
+      type: 'bar',
+      data: { labels: [/* real labels */], datasets: [{ data: [/* real data */], backgroundColor: token('--bar'), borderRadius: 0 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, border: { color: token('--ink') } },
+          y: { beginAtZero: true, grid: { color: token('--line') }, border: { display: false }, ticks: { maxTicksLimit: 5 } }
+        }
       }
-    }
-  });
+    });
+  }
+  document.fonts.ready.then(draw);
+  document.documentElement.addEventListener('themechange', draw);
 </script>
 ```
 
-Pull colors from the page's CSS custom properties at runtime. Wrap the canvas in a styled container with border and padding. On theme change, destroy and recreate the chart with the new palette — see [`interactivity.md`](interactivity.md).
+Put the canvas in a `.panel` with a fixed height. If the CDN fails, the takeaways and source note still tell the story.
 
 ## Complexity budgets
 
-| Chart type | Max |
+| Chart | Max |
 |---|---|
 | Bars | 8 (group into periods or split beyond) |
-| Line series | 5 |
+| Line series | 3 (switch metrics with a control instead of overlaying more) |
 | Line points | 12 (aggregate beyond) |
-| Pie slices | 6 |
+| Parts of a whole | 5 |
 | Scatter points | 30 |
-| Radar axes | 5 |
-| Pyramid layers | 6 |
 
-Over budget → split into two charts or switch to a table.
+Over budget → split into two charts or use a table.
 
 ## Chart page structure
 
 Copy [`templates/chart.html`](../templates/chart.html):
 
-1. **Header** — title naming what the chart shows and the period/scope
-2. **KPI row (optional)** — 2–4 big-number stat cards for the headline numbers
-3. **Chart container** — the centerpiece, card-framed
-4. **Takeaways** — 2–3 bullets naming what the user should notice ("March spike corresponds to the launch")
-5. **Source note** — tiny mono line naming where the data came from (file, query, conversation)
+1. **Header**: a title naming what is measured and over what period, then one sentence
+2. **KPIs (optional)**: 2–4 headline numbers on one surface split by 1px gaps. Label over value; values in mono, 28px, ink, never accent
+3. **Chart panel**: the centerpiece
+4. **Source note**: one small muted line naming where the data came from (file, query, conversation)
+5. **What to notice**: 2–3 takeaways ("March spike is the launch")
 
 ## Anti-patterns
 
 - Charting data the user never asked about ("I noticed a CSV, here's a dashboard")
-- More than 8 bars ungrouped
-- Accent on multiple bars/series ("everything is important")
-- 3D anything
-- Truncated y-axis on bar charts
-- Smoothed curves on sampled data
-- Unlabeled axes
-- Dots on every series in a multi-series line chart
+- A hue per bar, rainbow palettes, the accent on several marks
+- Sparklines on KPIs, icons in tinted circles, deltas as green pills
+- Truncated y-axis on bars, smoothed curves, rotated labels
+- Unlabelled units, or a legend for a single series
+- 3D, shadows, gradient fills
 - Inventing data to fill a gap in the story

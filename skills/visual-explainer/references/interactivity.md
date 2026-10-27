@@ -1,339 +1,232 @@
 # Interactivity — theme toggle, motion, and interaction patterns
 
-Every explainer page ships with a small interaction layer. All of it is optional per page; the base template wires what every page should have. This file is the single source of truth for the JS in the templates — follow the patterns verbatim.
+Every page ships a small interaction layer. The templates already wire it; this file explains the patterns so you can extend them without breaking them.
 
-**Core principle:** the page must be complete and meaningful **without JavaScript**. No-JS users get the default (light) theme, full static content, and no animations — just no toggle, hover, or step controls. Reduced-motion users get no movement but keep full interactivity. CDN failure (Mermaid/Excalidraw/Chart.js unreachable) must not blank the page.
+**Core principle:** the page is complete and meaningful **without JavaScript**. No-JS users get the light theme, full static content and the Mermaid source as text. Reduced-motion users get no movement but keep every interaction. A CDN failure (Pele, Chart.js) must never blank the page.
 
 ---
 
-## 1. Theme toggle (light / dark / auto)
+## 1. Theme toggle (system / light / dark)
 
-Three-state toggle. Positioned top-right, minimal chrome — a mono `Aa`-style button with moon/sun glyphs. The toggle:
+An icon button, top right: a monitor for system, a sun for light, a moon for dark. **System is the default**: the page follows `prefers-color-scheme` until the user picks. The button is `hidden` in the markup and shown by the script, so no-JS users never see a dead control.
 
-- Cycles **auto → light → dark → auto**
-- Persists to `localStorage` key `visual-explainer:theme`
-- Applies `data-theme="light"` / `data-theme="dark"` on `<html>`; CSS switches tokens under `[data-theme]`
-- In **auto** mode, follows `prefers-color-scheme` live via `matchMedia('change')` listener
-- On script load, if Mermaid diagrams exist, re-render them after the theme settles (Mermaid initializes once and can't react)
-
-### HTML
+- Cycles **system → light → dark → system**, persisted to `localStorage` key `visual-explainer:theme` (wrapped in `try`, storage can throw)
+- Sets `data-theme="light" | "dark"` on `<html>`; system removes the attribute and the media query takes over
+- The icon shown is chosen by CSS from `data-theme`; `aria-label` and `title` name the current theme
+- Dispatches a `themechange` event on `<html>` for anything drawn from JS colours (Chart.js)
 
 ```html
-<button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Theme: auto">
-  <span class="tt-glyph tt-auto">◐</span>
-  <span class="tt-glyph tt-light">☀</span>
-  <span class="tt-glyph tt-dark">☾</span>
-  <span class="tt-label" id="ttLabel">auto</span>
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme: system" title="Theme: system" hidden>
+  <svg class="tt-system" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+  <svg class="tt-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg class="tt-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
 </button>
 ```
 
-### CSS
-
 ```css
 .theme-toggle {
-  position: fixed;
-  top: var(--space-lg);
-  right: var(--space-lg);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-  color: var(--color-muted);
-  background: transparent;
-  border: 1px solid var(--color-rule);
-  border-radius: 999px;
-  padding: var(--space-xs) var(--space-md);
-  cursor: pointer;
-  z-index: 600;                 /* --z-tooltip from the z-scale */
-  transition: border-color 150ms var(--ease-out), color 150ms var(--ease-out);
+  position: fixed; top: 16px; right: 16px; width: 36px; height: 36px;
+  display: grid; place-items: center;
+  color: var(--muted); background: none; border: 0; border-radius: var(--radius); cursor: pointer;
+  transition: color 150ms var(--ease), background 150ms var(--ease);
 }
-.theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
-
-.tt-glyph { display: none; }
-[data-theme="dark"] .theme-toggle .tt-dark { display: inline; }
-[data-theme="light"] .theme-toggle .tt-light { display: inline; }
-html:not([data-theme]) .theme-toggle .tt-auto { display: inline; }
-html:not([data-theme]) .theme-toggle .tt-label::after { content: 'auto'; }
-[data-theme="dark"]  .theme-toggle .tt-label::after { content: 'dark'; }
-[data-theme="light"] .theme-toggle .tt-label::after { content: 'light'; }
+.theme-toggle[hidden] { display: none; }   /* display: grid would override the hidden attribute */
+.theme-toggle:hover { color: var(--ink); background: var(--surface); }
+.theme-toggle svg {
+  display: none; width: 18px; height: 18px;
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+html:not([data-theme]) .tt-system,
+html[data-theme="light"] .tt-light,
+html[data-theme="dark"] .tt-dark { display: block; }
 ```
 
-### CSS token structure — tokens move under a theme attribute
+Token structure:
 
 ```css
-:root { ...light tokens... }                       /* light is also the no-JS default */
-
-html[data-theme="dark"] { ...dark tokens... }      /* manual dark override */
-
+:root { /* light tokens: also the no-JS default */ }
+html[data-theme="dark"] { /* dark tokens: manual override */ }
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme]) { ...dark tokens... }     /* system dark, only when user hasn't picked */
+  html:not([data-theme]) { /* dark tokens: system, only when the user hasn't picked */ }
 }
 ```
-
-Mermaid's `themeVariables` follow the same split: read `document.documentElement.dataset.theme`, else the media query.
-
-### JS
 
 ```html
 <script>
-(function () {
-  const KEY = 'visual-explainer:theme';
-  const ORDER = ['auto', 'light', 'dark'];
-  const mq = window.matchMedia('(prefers-color-scheme: dark)');
-
-  function apply(theme) {
-    if (theme === 'auto') {
-      document.documentElement.removeAttribute('data-theme');
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
+  (function () {
+    const KEY = 'visual-explainer:theme';
+    const ORDER = ['system', 'light', 'dark'];
+    const root = document.documentElement;
     const btn = document.getElementById('themeToggle');
-    if (btn) btn.title = 'Theme: ' + theme;
-    document.documentElement.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
-  }
 
-  const saved = localStorage.getItem(KEY);
-  if (saved && ORDER.includes(saved)) apply(saved);
-
-  mq.addEventListener('change', () => {
-    if (!document.documentElement.dataset.theme) {
-      document.documentElement.dispatchEvent(new CustomEvent('themechange', { detail: 'auto' }));
+    function apply(theme) {
+      if (theme === 'system') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', theme);
+      btn.setAttribute('aria-label', 'Theme: ' + theme);
+      btn.title = 'Theme: ' + theme;
+      root.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
     }
-  });
 
-  const btn = document.getElementById('themeToggle');
-  if (btn) btn.addEventListener('click', () => {
-    const current = document.documentElement.dataset.theme || 'auto';
-    const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
-    localStorage.setItem(KEY, next);
-    apply(next);
-  });
-})();
-</script>
-```
+    let saved = null;
+    try { saved = localStorage.getItem(KEY); } catch (e) {}
+    if (ORDER.includes(saved)) apply(saved);
 
-**Mermaid re-render on theme change** (diagram pages only):
-
-```html
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-
-  function isDark() {
-    return document.documentElement.dataset.theme
-      ? document.documentElement.dataset.theme === 'dark'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-
-  function initMermaid() {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'base',
-      look: 'classic',
-      themeVariables: isDark() ? DARK_VARS : LIGHT_VARS
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (!root.dataset.theme) root.dispatchEvent(new CustomEvent('themechange', { detail: 'system' }));
     });
-    mermaid.run({ nodes: [document.getElementById('mermaid-diagram')] });
-  }
 
-  initMermaid();
-
-  document.documentElement.addEventListener('themechange', () => {
-    const el = document.getElementById('mermaid-diagram');
-    el.removeAttribute('data-processed');     // strip Mermaid's rendered output
-    el.innerHTML = el.textContent;            // restore the raw diagram source
-    initMermaid();                            // re-render with the new theme
-  });
+    btn.hidden = false;
+    btn.addEventListener('click', () => {
+      const next = ORDER[(ORDER.indexOf(root.dataset.theme || 'system') + 1) % ORDER.length];
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+      apply(next);
+    });
+  })();
 </script>
 ```
 
-**Chart.js re-render on theme change** (chart pages only): keep a reference to the `Chart` instance and call `.destroy()` + recreate with the new palette, or simpler — reload the page (charts are cheap to redraw, but reload loses scroll position; prefer destroy/recreate).
+**Diagrams need nothing here.** Pele draws with CSS variables, so a theme change recolours the SVG instantly. Hand-built SVG that uses `var(--…)` in its attributes behaves the same way.
+
+**Chart.js** reads colours once. Listen for `themechange`, then `destroy()` and recreate the chart with colours read from the tokens. The pattern is in [`charts.md`](charts.md).
 
 ---
 
-## 2. Motion system
-
-### Tokens
+## 2. Motion
 
 ```css
-:root {
-  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);   /* exits, entrances */
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* property changes */
-  --dur-fast:    150ms;
-  --dur-base:    300ms;
-  --dur-slow:    500ms;
-}
+:root { --ease: cubic-bezier(0.16, 1, 0.3, 1); }
 ```
 
-### Entrance animations
+### Entrance
 
-Elements get a reveal-up on load, staggered. `.ve-in` class:
+One staggered fade-up on the first-screen blocks: header, then the visual, then the takeaways.
 
 ```css
-.ve-in { opacity: 0; animation: ve-in var(--dur-slow) var(--ease-out) forwards; }
-
-@keyframes ve-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ve-in { animation: none; opacity: 1; }
-}
+.ve-in { animation: ve-in 400ms var(--ease) both; }
+@keyframes ve-in { from { opacity: 0; transform: translateY(8px); } }
 ```
 
-Stagger via inline `style="animation-delay: 60ms"` per element (first viewport elements only — never stagger things far below the fold, it looks broken). Keep `animation-delay` under ~400ms total.
+Stagger with inline `style="animation-delay: 60ms"` steps, at most ~300ms in total. Never stagger content far below the fold.
 
-### SVG draw-in (diagram connectors, chart lines)
-
-`stroke-dasharray`/`stroke-dashoffset` draw animation for hand-built SVG lines:
+### Bars grow in
 
 ```css
-.ve-draw {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: ve-draw 800ms var(--ease-in-out) forwards;
-}
+.ve-bar { animation: ve-bar 600ms var(--ease) both; }
+@keyframes ve-bar { from { transform: scaleY(0); } }
+```
+
+`transform-origin: bottom` on the bar; delays step 40ms per bar.
+
+### SVG draw-in (hand-built connectors)
+
+```css
+.ve-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ve-draw 700ms var(--ease) forwards; }
 @keyframes ve-draw { to { stroke-dashoffset: 0; } }
 ```
 
-Set `pathLength="1"` on the `<path>` so the dash math is normalized. Reduced-motion: no animation, full stroke visible.
+Set `pathLength="1"` on the path or line so the dash maths is normalised.
 
-### Count-up (KPI numbers)
+### Rules
 
-```html
-<script>
-document.querySelectorAll('[data-count]').forEach(el => {
-  const target = parseFloat(el.dataset.count);
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced) return;   // static value is already in the markup
-  const dur = 900;
-  const start = performance.now();
-  function tick(now) {
-    const p = Math.min((now - start) / dur, 1);
-    const eased = 1 - Math.pow(1 - p, 3);   // easeOutCubic
-    el.textContent = Math.round(target * eased).toLocaleString();
-    if (p < 1) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-});
-</script>
-```
-
-Static value stays in the markup so no-JS users see the real number.
-
-### Hard rules
-
-- Animate **`transform` and `opacity` only** — never layout properties (height, top, margin)
-- Use the two named easings — never the browser default `ease`, never bounce/overshoot
-- No continuous glow, pulse, or breathing on static content
+- Animate `transform` and `opacity` only, never layout properties
+- No bounce, pulse, glow, breathing, hover lifts or count-up numbers. The number in the markup is the number
 - Reduced motion: everything instant, no exceptions
-- Max one orchestrated entrance per page (staggered, not cascading)
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+```
 
 ---
 
 ## 3. Chart interactivity
 
-### Hover tooltips (pure CSS, zero JS)
+### Hover tooltips (pure CSS)
 
-Position a tooltip with a `data-tip` attribute; show on hover/focus:
+A plain box, no arrow, label and value on one line:
 
 ```css
-[data-tip] { position: relative; cursor: default; }
-[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-ink);
-  color: var(--color-paper);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  padding: 4px 8px;
-  border-radius: 4px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 150ms var(--ease-out);
+.bar-tip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--bg);
+  font-size: var(--fs-small); padding: 4px 8px; border-radius: 4px;
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity 150ms var(--ease);
 }
-[data-tip]:hover::after, [data-tip]:focus-visible::after { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { [data-tip]::after { transition: none; } }
+.bar-col:hover .bar-tip, .bar-col:focus-visible .bar-tip { opacity: 1; }
 ```
 
-Bars in the hand-built SVG get `data-tip="Jan — 360 users"` + `tabindex="0"` + `role="img"` so they're hoverable and keyboard-focusable. (SVG child elements can't reliably do CSS `::after`, so the `data-tip` pattern applies to HTML wrappers; for SVG use a sibling `<title>` element or a JS tooltip. The chart template uses HTML overlays — see it.)
+Each bar column gets `tabindex="0"` so keyboard users get the same tooltip. Value labels above the bars carry the data without hover.
 
-### Bar highlight
+### Dim the others on hover
 
-Hovering a bar dims the others (via a group-level class) and raises the hovered bar's opacity to full + accent border. `:hover` on the SVG group with `.bar-group:hover .bar:not(:hover) { opacity: 0.4; }` — only works when bars are HTML elements or SVG with CSS vars; the chart template does this with HTML-positioned bars.
-
-### Chart.js (only for complex data)
-
-Chart.js gives tooltips, hover, and legends for free. Theme change = destroy + recreate with the new palette colors. CDN failure = chart doesn't render, but the page's takeaways and source note still tell the story.
+```css
+.chart:hover .bar-col:not(:hover) .bar { opacity: 0.45; }
+```
 
 ---
 
 ## 4. Diagram interactivity
 
-### Mermaid
+### Pele
 
-- Mermaid's default: hover highlights edges/nodes in its own way — acceptable as-is
-- **Re-render on theme change** is mandatory (pattern above)
-- Zoom/pan controls only for genuinely complex diagrams (15+ nodes) — see visual-explainer's `diagram-shell` pattern; overkill for explainer-scale diagrams
+- Diagrams that shrink to fit their container get zoom automatically (`zoom: 'auto'`, the default in `mount()`)
+- `mount()` re-lays the diagram out when the container resizes; nothing to wire
+- No re-render on theme change (see §1)
 
-### Hand-built SVG
+### Hand-built SVG: step-through
 
-- `data-tip` hover annotations for node explanations
-- Optional **step-through** for processes: prev/next buttons that cycle a `data-step` attribute on the SVG, CSS reveals/hides stages:
+Only when an ordered change is the point. Prev and next buttons cycle `data-step`, and CSS shows each stage:
 
 ```html
 <div class="stepper">
-  <button id="stepPrev" aria-label="Previous step">←</button>
-  <span id="stepLabel" class="stepper-label">Step 1 of 4</span>
-  <button id="stepNext" aria-label="Next step">→</button>
+  <button id="stepPrev" type="button" aria-label="Previous step">←</button>
+  <span id="stepLabel">1 of 4</span>
+  <button id="stepNext" type="button" aria-label="Next step">→</button>
 </div>
 ```
 
 ```css
-.svg-stage [data-stage] { opacity: 0.15; transition: opacity 300ms var(--ease-in-out); }
+.svg-stage [data-stage] { opacity: 0.2; transition: opacity 300ms var(--ease); }
 .svg-stage[data-step="1"] [data-stage="1"] { opacity: 1; }
-.svg-stage[data-step="1"] [data-stage="1"].focal { /* accent stroke */ }
 ```
 
 ```html
 <script>
-const stages = 4;
-let step = 1;
-const el = document.getElementById('stage');
-function show(n) {
-  step = Math.min(Math.max(n, 1), stages);
-  el.dataset.step = step;
-  document.getElementById('stepLabel').textContent = 'Step ' + step + ' of ' + stages;
-}
-document.getElementById('stepPrev').addEventListener('click', () => show(step - 1));
-document.getElementById('stepNext').addEventListener('click', () => show(step + 1));
+  const stages = 4;
+  let step = 1;
+  const el = document.getElementById('stage');
+  function show(n) {
+    step = Math.min(Math.max(n, 1), stages);
+    el.dataset.step = step;
+    document.getElementById('stepLabel').textContent = step + ' of ' + stages;
+  }
+  document.getElementById('stepPrev').addEventListener('click', () => show(step - 1));
+  document.getElementById('stepNext').addEventListener('click', () => show(step + 1));
 </script>
 ```
 
-Only when motion clarifies ordered change — static diagrams stay static.
+Without JS no `data-step` is set, so add a rule that shows every stage in that case (`.svg-stage:not([data-step]) [data-stage] { opacity: 1; }`).
 
 ---
 
-## 5. Options interactivity
+## 5. Option selection
 
-The options page (UI mockup comparison) gets click-to-select:
-
-- Each option card is a `<button class="option-card">` (button, not div — keyboard accessible)
-- Click toggles `.selected` — accent border + check marker in the header
-- Exactly one selected at a time (radio behavior); clicking the selected one deselects
-- **The selection is NOT persisted and NOT recorded** — this is a visual aid, not a form. The user still tells the agent their pick in chat. Say this on the page: *"Click to mark a favourite — your choice is visual only; tell me in chat."*
-- The recommended option (if any) starts with `.selected`
+- Each option is a `<button type="button" class="option" aria-pressed>`, keyboard accessible
+- A click selects it: `.selected` draws a 2px accent outline. Exactly one at a time
+- The recommended option (if any) ships selected
+- **Nothing is recorded.** The page says so: *"Clicking a card only marks it on this page. Tell me your pick in chat."*
 
 ```js
-document.querySelectorAll('.option-card').forEach(card => {
+document.querySelectorAll('.option').forEach(card => {
   card.addEventListener('click', () => {
-    document.querySelectorAll('.option-card.selected').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.option.selected').forEach(c => {
+      c.classList.remove('selected');
+      c.setAttribute('aria-pressed', 'false');
+    });
     card.classList.add('selected');
+    card.setAttribute('aria-pressed', 'true');
   });
 });
 ```
@@ -342,19 +235,15 @@ document.querySelectorAll('.option-card').forEach(card => {
 
 ## 6. What never gets interactivity
 
-- Explainer prose, takeaway bullets — static text
-- Any content the user will screenshot — a toggle or tooltip shouldn't move the pixels
-- Charts with <5 data points — a tooltip adds nothing over a value label
-- Pages for print/export — no toggle, no animations
-
----
+- Prose and takeaways
+- Anything the user will screenshot: a toggle or tooltip shouldn't move pixels
+- Charts with fewer than 5 values: a tooltip adds nothing over a value label
+- Pages meant for print or export
 
 ## 7. No-JS and reduced-motion contract
 
-| User | Theme toggle | Animations | Tooltips | Step-through | Option select |
-|---|---|---|---|---|---|
-| No JS | None (light default) | None — content fully visible | None — value labels carry the info | All stages visible | No selection — cards read as static options |
-| JS + reduced motion | Works | None — instant | Works | Works (instant transitions) | Works |
-| JS + normal | Works | Works | Works | Works | Works |
-
-Static markup must carry the complete meaning in every case. The interaction layer is enhancement, never the content.
+| User | Theme toggle | Animations | Diagrams | Tooltips | Step-through | Option select |
+|---|---|---|---|---|---|---|
+| No JS | Hidden (follows system) | CSS only, content always visible | Mermaid source shown as text | Value labels carry the data | All stages visible | Cards read as static options |
+| JS + reduced motion | Works | None | Rendered | Work | Works, instant | Works |
+| JS | Works | Work | Rendered | Work | Works | Works |

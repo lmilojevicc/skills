@@ -1,9 +1,9 @@
 ---
 name: visual-explainer
-description: "Generate self-contained HTML pages with diagrams (Mermaid or Excalidraw), charts, and side-by-side visual comparisons to aid explanations. Use when an explanation would be clearer seen than read — comparing UI options or design directions, architecture or flow diagrams (technical or non-technical), spatial relationships, or numerical data the user is actively exploring or comparing. Do not use for files that merely exist, plain text answers, simple choices describable in words, or content a table or paragraph covers fine."
+description: "Generate self-contained, minimal HTML pages with diagrams (Mermaid via Pele, or Excalidraw), charts, and side-by-side visual comparisons to aid explanations. Use when an explanation would be clearer seen than read — comparing UI options or design directions, architecture or flow diagrams (technical or non-technical), spatial relationships, or numerical data the user is actively exploring or comparing. Do not use for files that merely exist, plain text answers, simple choices describable in words, or content a table or paragraph covers fine."
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Visual Explainer
@@ -68,37 +68,30 @@ Route by what the content *is*:
 
 | Content | Representation | Reference |
 |---|---|---|
-| Graph-shaped: flows, pipelines, sequences, ER, state machines, class, mindmap | **Mermaid** in an HTML page | [`references/diagrams.md`](references/diagrams.md) |
+| Graph-shaped: flows, pipelines, sequences, ER, state machines, class, mindmap | **Mermaid**, rendered with **Pele** | [`references/diagrams.md`](references/diagrams.md) |
 | Spatial, hand-drawn feel, whiteboard-style, non-technical audience, user will want to edit | **Excalidraw** (embedded canvas or `.excalidraw` file) | [`references/diagrams.md`](references/diagrams.md) |
 | Editorial visuals Mermaid can't express: before/after states, mass/depth diagrams, layered cross-sections | **Hand-built SVG/CSS** | [`references/style.md`](references/style.md) |
 | Numerical data being explored: trends, comparisons, distributions, parts of a whole | **Chart** (hand-built SVG for simple, Chart.js for complex) | [`references/charts.md`](references/charts.md) |
 | 2–4 genuinely different options: UI mockups, architectures, approaches | **Side-by-side comparison** | [`references/options.md`](references/options.md) |
-| 15+ element architecture or mixed content | **Hybrid**: small Mermaid overview + CSS detail cards | [`references/diagrams.md`](references/diagrams.md) |
+| 15+ element architecture or mixed content | **Hybrid**: small Mermaid overview + detail panels | [`references/diagrams.md`](references/diagrams.md) |
 
-Mix representations on one page when it serves the explanation. Don't lean on one renderer for everything — a Mermaid diagram next to a hand-built before/after SVG is more effective than two Mermaid diagrams.
+Mix representations on one page when it serves the explanation. A Mermaid diagram next to a hand-built before/after SVG beats two Mermaid diagrams.
+
+**Mermaid diagrams render with [Pele](https://github.com/obsidianmd/pele), not Mermaid.js.** Pele is small, has no dependencies, and colours the SVG with CSS variables, so diagrams take the page palette and follow the theme toggle without a re-render. Setup and the syntax check are in [`references/diagrams.md`](references/diagrams.md).
 
 **Technical vs non-technical:**
 
-- **Technical audience**: Mermaid, mono labels for ports/paths, precise terminology, denser information
+- **Technical audience**: Mermaid, precise terminology, denser information
 - **Non-technical audience**: Excalidraw or simplified visuals, plain-language labels, fewer nodes, human metaphors, no jargon. A hand-drawn style reads friendlier than a graph-rendered flowchart
 - When unsure, match the vocabulary the user has been using in the conversation
 
-### 2.2 Pick the style
+### 2.2 Style: one quiet system
 
-Commit to one aesthetic direction before writing HTML. The default system is **Hallmark editorial** — warm-oat OKLCH palette, Fraunces display + IBM Plex Sans body + JetBrains Mono outlier, hairlines over card borders, one terracotta accent, left-biased layout. Simple and crowd-appealing on purpose. Full system in [`references/style.md`](references/style.md) — load it first, every time.
+Every page uses the same minimal system, so there is no style to pick. It follows the anti-slop house rules of [taste-skill](https://github.com/leonxlnx/taste-skill): **IBM Plex Mono headings, IBM Plex Sans text**, a neutral stone ground, full-ink text, one blue accent on the focal element only, panels separated by a step in tone rather than lines or shadows, and no ornaments (no eyebrows, tracked caps, pills, index numbers, gradients). Light and dark ship together. Full system in [`references/style.md`](references/style.md); read it first, every time.
 
-**Every page also ships an interaction layer** (theme toggle, restrained motion, hover affordances). Read [`references/interactivity.md`](references/interactivity.md) and wire the patterns that fit the page — the templates already include them.
+**Every page also ships a small interaction layer** (theme toggle, one restrained entrance, hover affordances where they add signal). See [`references/interactivity.md`](references/interactivity.md); the templates already include it.
 
-Style must fit the content voice:
-
-| Content | Aesthetic |
-|---|---|
-| Technical architecture, code-adjacent | Hallmark editorial default — clean, precise, mono accents |
-| Business process, non-technical | Hallmark editorial + hand-drawn lean (Excalidraw, Comic Neue annotations) |
-| Data exploration | Hallmark editorial, data-dense, restrained, no decoration |
-| UI option comparison | Hallmark editorial frame; options carry their own style |
-
-Default is light editorial (warm oat paper, ink text, terracotta accent). Dark mode auto-applies via `prefers-color-scheme` — the templates ship both.
+For a non-technical audience, keep the same page and lean on simpler visuals: fewer nodes, plain-language labels, or an Excalidraw sketch. UI option previews carry their own style inside the preview; the page around them stays plain.
 
 ### 2.3 Write the HTML
 
@@ -109,7 +102,7 @@ Copy the matching template from [`templates/`](templates/):
 - [`templates/chart.html`](templates/chart.html) — data chart centerpiece
 - [`templates/options.html`](templates/options.html) — side-by-side comparison
 
-**Every page must be a complete, self-contained HTML document**: embedded CSS, data-URI favicon, CDN scripts only for Mermaid/Excalidraw/Chart.js, no other dependencies. Pages must render meaningfully even if a CDN fails — put the Mermaid source or a text fallback in the page.
+**Every page must be a complete, self-contained HTML document**: embedded CSS, data-URI favicon, Google Fonts, and CDN scripts only for Pele, Excalidraw or Chart.js, pinned to exact versions. Pages must render meaningfully even if a CDN fails: the Mermaid source stays in the page as text until Pele replaces it.
 
 **Prose discipline**: diagrams carry the weight. Sparse labels, short captions, no paragraphs. If the visual needs a paragraph to be understood, redraw the visual. The detailed explanation stays in chat.
 
@@ -134,7 +127,7 @@ Read only what the current output needs:
 
 | Need | Read |
 |---|---|
-| Any Mermaid diagram, Excalidraw embed, or hand-built SVG diagram | [`references/diagrams.md`](references/diagrams.md) |
+| Any Mermaid diagram (Pele), Excalidraw embed, or hand-built SVG diagram | [`references/diagrams.md`](references/diagrams.md) |
 | Any chart from numerical data | [`references/charts.md`](references/charts.md) |
 | Any page (all of them) | [`references/style.md`](references/style.md) |
 | Theme toggle, motion, hover tooltips, step-through, option selection | [`references/interactivity.md`](references/interactivity.md) |
@@ -148,19 +141,16 @@ Templates are always available; copy the closest one and adapt. The templates sh
 
 These apply to every page. Details in the references.
 
-1. **No AI-slop palette**: no violet/fuchsia/indigo defaults (`#8b5cf6`, `#7c3aed`, `#d946ef`), no cyan+magenta+purple neon, no gradient-mesh blobs, no pure `#000`/`#fff`
-2. **No AI-slop typography**: no Inter, Roboto, Arial, or bare system-ui as the body font. Default pairing: Fraunces + IBM Plex Sans + JetBrains Mono (see [`references/style.md`](references/style.md))
-3. **OKLCH custom properties** for all palette values (`--color-paper`, `--color-ink`, `--color-accent`, …). Hex equivalents only in SVG attributes, Mermaid `themeVariables`, Chart.js, and favicons
-4. **Hairlines, not card borders or shadows**. Depth comes from weight, size, and color. Max radius 8px
-5. **Accent discipline**: 1–2 focal elements in accent color per visual, ≤3% of any viewport. Everything else ink/muted
-6. **Complexity budgets**: max ~9 nodes per diagram, max ~8 bars, max ~5 line series. Over budget → split into overview + detail
-7. **No horizontal overflow** at desktop width; `min-width: 0` on grid/flex children; `overflow-x: clip` on html and body
-8. **Interaction layer ships by default**: theme toggle (light/dark/auto, persisted), entrance animations under 500ms, hover affordances where they add signal. `prefers-reduced-motion` respected; no continuous animations; animate only `transform`/`opacity`. Patterns in [`references/interactivity.md`](references/interactivity.md)
-9. **Pages remain complete without JS** — static markup carries the full meaning; toggle, tooltips, and animations are enhancement
-10. **Mermaid**: `theme: 'base'` with `themeVariables` matching the page palette (hex); re-render on theme change; never bare `<pre class="mermaid">` without proper theming
-11. **Every font weight used must be loaded** — no faux-bold; `font-display: swap` on all web fonts
-
----
+1. **Type**: IBM Plex Mono for headings, figures and code; IBM Plex Sans for everything else, labels and axis ticks included. Four sizes. Sentence case. Load every weight used, `display=swap`
+2. **Palette**: the hex tokens in [`references/style.md`](references/style.md), shared by CSS, SVG, Pele and Chart.js. No cream with terracotta, no violet/indigo/fuchsia, no neon, no gradients
+3. **Accent discipline**: the accent marks 1–2 focal elements per visual. Everything else ink, muted or `--bar`
+4. **No ornaments**: no eyebrows above titles, no tiny tracked uppercase labels, no pill badges, no 01/02/03 numbering, no hairline section dividers, no shadows on things at rest, no icons in tinted circles, no emoji
+5. **Surfaces by tone**: panels are `--surface` on `--bg`, no borders around them, one 6px radius, no card in card
+6. **Complexity budgets**: ~9 nodes per diagram, 8 bars, 3 line series. Over budget → split into overview + detail
+7. **No horizontal overflow** at any width; `min-width: 0` on grid/flex children; `overflow-x: clip` on html and body; equal side margins
+8. **Interaction layer ships by default**: theme toggle (icon button; system by default, then light and dark; persisted), one entrance under 500ms, hover where it adds signal. `transform`/`opacity` only; `prefers-reduced-motion` makes everything instant
+9. **Pages remain complete without JS**: static markup carries the full meaning
+10. **Mermaid renders with Pele**, pinned version, themed through `--pele-*` variables mapped to the page tokens. Never hard-code colours in the Mermaid source (`style`, `classDef fill:`); mark the focal node with `class X focal`
 
 ## 5. Final checklist
 
@@ -171,14 +161,14 @@ Before delivering:
 - [ ] Written to `~/.visual-explainer/` (or temp dir with path told to user)
 - [ ] Opened in browser (or open command given)
 - [ ] Chat summary is 1–3 sentences, not a re-explanation
-- [ ] No Inter/Roboto/Arial/system-ui body font; Fraunces + IBM Plex Sans + JetBrains Mono loaded
-- [ ] OKLCH tokens in CSS; hex only in SVG/Mermaid/Chart.js/favicon contexts
-- [ ] No violet/fuchsia/neon palette; no pure black/white
-- [ ] Accent used on ≤2 focal elements
-- [ ] Hairlines, not shadows; no card-in-card
+- [ ] Mono headings, sans text; nothing above the `h1`
+- [ ] Page tokens only; no hard-coded colours in CSS, SVG or Mermaid source
+- [ ] Accent on ≤2 focal elements
+- [ ] No eyebrows, tracked caps, pills, shadows, gradients or section rules
 - [ ] Within complexity budgets
-- [ ] No horizontal overflow, no console errors; `overflow-x: clip` on html/body
-- [ ] Theme toggle present, persisted, and Mermaid re-renders on change
-- [ ] Reduced motion: animations collapse to instant; content fully visible
-- [ ] No-JS contract: static markup carries the complete meaning
-- [ ] Prose sparse — visuals carry the meaning
+- [ ] Every Mermaid diagram passed the Pele syntax check
+- [ ] No horizontal overflow at 390px, no console errors
+- [ ] Theme toggle works in both directions; diagrams and charts follow it
+- [ ] Reduced motion: everything instant; content fully visible
+- [ ] No-JS: static markup carries the complete meaning
+- [ ] Prose sparse: visuals carry the meaning

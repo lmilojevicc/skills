@@ -3,441 +3,320 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Diagram Explanation</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23c23c14'/></svg>" />
+  <title>How authentication works</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23171717'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --color-paper:    oklch(96%  0.012 80);
-      --color-paper-2:  oklch(93%  0.014 80);
-      --color-rule:     oklch(82%  0.010 80);
-      --color-neutral:  oklch(56%  0.008 80);
-      --color-muted:    oklch(40%  0.008 70);
-      --color-ink:      oklch(18%  0.010 60);
-      --color-accent:   oklch(55%  0.19  45);
-      --color-focus:    oklch(55%  0.19  55);
-      --color-series-1: oklch(45%  0.05  60);
-      --color-series-2: oklch(60%  0.04  70);
-      --color-series-3: oklch(72%  0.03  75);
-      --font-display: "Fraunces", ui-serif, Georgia, serif;
-      --font-body:    "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-      --font-mono:    "JetBrains Mono", ui-monospace, monospace;
-      --text-xs:   0.64rem;
-      --text-sm:   0.8rem;
-      --text-base: 1rem;
-      --text-md:   1.25rem;
-      --text-lg:   1.5625rem;
-      --text-xl:   1.9531rem;
-      --space-xs:  0.5rem;
-      --space-sm:  0.75rem;
-      --space-md:  1rem;
-      --space-lg:  1.5rem;
-      --space-xl:  2.5rem;
-      --space-2xl: 4rem;
-      --space-3xl: 6rem;
-      --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-      --dur-fast:    150ms;
-      --dur-base:    300ms;
-      --dur-slow:    500ms;
+      --bg:        #fafaf9;
+      --surface:   #f1f1ef;
+      --surface-2: #e6e6e3;
+      --line:      #d6d6d2;
+      --bar:       #cfcfca;
+      --ink:       #171717;
+      --muted:     #5c5c5c;
+      --accent:    #0b62d6;
+
+      --font-sans: "IBM Plex Sans", ui-sans-serif, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+      --fs-title: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
+      --fs-head:  1.125rem;
+      --fs-body:  1rem;
+      --fs-small: 0.8125rem;
+
+      --radius: 6px;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     html[data-theme="dark"] {
-      --color-paper:    oklch(14%  0.008 80);
-      --color-paper-2:  oklch(18%  0.010 80);
-      --color-rule:     oklch(30%  0.008 80);
-      --color-neutral:  oklch(58%  0.008 80);
-      --color-muted:    oklch(72%  0.006 80);
-      --color-ink:      oklch(94%  0.006 80);
-      --color-accent:   oklch(65%  0.16  55);
-      --color-focus:    oklch(70%  0.19  55);
-      --color-series-1: oklch(55%  0.05  60);
-      --color-series-2: oklch(65%  0.04  70);
-      --color-series-3: oklch(75%  0.03  75);
+      --bg:        #111111;
+      --surface:   #1b1b1b;
+      --surface-2: #262626;
+      --line:      #333333;
+      --bar:       #444444;
+      --ink:       #ececec;
+      --muted:     #a1a1a1;
+      --accent:    #5b9cf5;
     }
 
     @media (prefers-color-scheme: dark) {
       html:not([data-theme]) {
-        --color-paper:    oklch(14%  0.008 80);
-        --color-paper-2:  oklch(18%  0.010 80);
-        --color-rule:     oklch(30%  0.008 80);
-        --color-neutral:  oklch(58%  0.008 80);
-        --color-muted:    oklch(72%  0.006 80);
-        --color-ink:      oklch(94%  0.006 80);
-        --color-accent:   oklch(65%  0.16  55);
-        --color-focus:    oklch(70%  0.19  55);
-        --color-series-1: oklch(55%  0.05  60);
-        --color-series-2: oklch(65%  0.04  70);
-        --color-series-3: oklch(75%  0.03  75);
+        --bg:        #111111;
+        --surface:   #1b1b1b;
+        --surface-2: #262626;
+        --line:      #333333;
+        --bar:       #444444;
+        --ink:       #ececec;
+        --muted:     #a1a1a1;
+        --accent:    #5b9cf5;
       }
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { overflow-x: clip; }
-    body { overflow-x: clip; }
+    html, body { overflow-x: clip; }
 
     body {
-      background: var(--color-paper);
-      color: var(--color-ink);
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      line-height: 1.6;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
     }
 
     main {
-      max-width: 1100px;
+      max-width: 960px;
       margin: 0 auto;
-      padding: var(--space-3xl) var(--space-2xl) var(--space-2xl);
+      padding: 96px 24px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
     }
+    main > * { min-width: 0; }
 
-    header { margin-bottom: var(--space-2xl); }
-
-    .eyebrow {
+    h1, h2, h3 {
       font-family: var(--font-mono);
-      font-size: var(--text-xs);
       font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-accent);
-      margin-bottom: var(--space-sm);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
     }
+    h1 { font-size: var(--fs-title); max-width: 22ch; }
+    h2 { font-size: var(--fs-head); margin-bottom: 16px; }
 
-    h1 {
-      font-family: var(--font-display);
-      font-size: var(--text-xl);
-      font-weight: 600;
-      line-height: 1.2;
-      letter-spacing: -0.015em;
-      margin-bottom: var(--space-sm);
-      max-width: 24ch;
-    }
+    .lede { margin-top: 16px; max-width: 56ch; }
 
-    .subtitle {
-      color: var(--color-muted);
-      font-size: var(--text-base);
-      max-width: 55ch;
-    }
-
-    .diagram-wrap {
-      background: var(--color-paper-2);
-      border: 1px solid var(--color-rule);
-      border-radius: 8px;
-      padding: var(--space-xl);
-      overflow-x: auto;
-      margin-bottom: var(--space-sm);
-    }
-
-    .diagram-wrap .mermaid {
-      display: flex;
-      justify-content: center;
-      min-width: min-content;
-    }
-
-    /* Mermaid theming — classDef fills use page CSS vars so the toggle re-colors them */
-    .mermaid .nodeLabel { color: var(--color-ink) !important; font-family: var(--font-body) !important; }
-    .mermaid .edgeLabel { color: var(--color-muted) !important; background-color: var(--color-paper) !important; font-family: var(--font-mono) !important; font-size: 12px !important; }
-    .mermaid .edgeLabel rect { fill: var(--color-paper) !important; }
-    .mermaid .focal rect, .mermaid .focal circle, .mermaid .focal polygon {
-      stroke: var(--color-accent) !important;
-      stroke-width: 2px !important;
-    }
-
-    .legend {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--color-neutral);
-      margin-bottom: var(--space-xl);
-      display: flex;
-      gap: var(--space-lg);
-      flex-wrap: wrap;
-    }
-    .legend span { display: inline-flex; align-items: center; gap: var(--space-xs); }
-    .legend .swatch {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      border: 1px solid var(--color-rule);
-    }
-    .legend .swatch.accent { background: var(--color-accent); border-color: var(--color-accent); opacity: 0.25; }
-    .legend .swatch.muted { background: var(--color-neutral); opacity: 0.3; }
-    .legend .swatch.dashed { background: transparent; border-style: dashed; }
-
-    .section { margin-bottom: var(--space-2xl); }
-    .section h2 {
-      font-family: var(--font-display);
-      font-size: var(--text-lg);
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      margin-bottom: var(--space-md);
-      padding-top: var(--space-lg);
-      border-top: 1px solid var(--color-rule);
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
     }
 
     .takeaways {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: var(--space-sm);
-      max-width: 65ch;
+      gap: 8px;
+      max-width: 64ch;
     }
-    .takeaways li {
-      padding-left: var(--space-lg);
-      position: relative;
-      color: var(--color-muted);
-    }
+    .takeaways li { padding-left: 20px; position: relative; }
     .takeaways li::before {
-      content: '';
+      content: "–";
       position: absolute;
       left: 0;
-      top: 0.55em;
-      width: 8px;
-      height: 8px;
-      background: var(--color-accent);
+      color: var(--muted);
     }
 
-    .colophon {
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      color: var(--color-neutral);
-      border-top: 1px solid var(--color-rule);
-      padding-top: var(--space-md);
-      margin-top: var(--space-3xl);
-      letter-spacing: 0.02em;
-    }
+    .note, footer { font-size: var(--fs-small); color: var(--muted); }
 
-    :focus-visible {
-      outline: 2px solid var(--color-focus);
-      outline-offset: 2px;
-    }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* ---------- Theme toggle ---------- */
     .theme-toggle {
       position: fixed;
-      top: var(--space-lg);
-      right: var(--space-lg);
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      font-family: var(--font-mono);
-      font-size: var(--text-xs);
-      letter-spacing: 0.04em;
-      color: var(--color-muted);
-      background: var(--color-paper);
-      border: 1px solid var(--color-rule);
-      border-radius: 999px;
-      padding: var(--space-xs) var(--space-md);
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      border-radius: var(--radius);
       cursor: pointer;
-      z-index: 600;
-      transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+      transition: color 150ms var(--ease), background 150ms var(--ease);
     }
-    .theme-toggle:hover { border-color: var(--color-accent); color: var(--color-accent); }
+    .theme-toggle[hidden] { display: none; }
+    .theme-toggle:hover { color: var(--ink); background: var(--surface); }
+    .theme-toggle svg {
+      display: none;
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    html:not([data-theme]) .tt-system,
+    html[data-theme="light"] .tt-light,
+    html[data-theme="dark"] .tt-dark { display: block; }
 
-    .tt-glyph { display: none; }
-    html[data-theme="dark"]  .theme-toggle .tt-dark  { display: inline; }
-    html[data-theme="light"] .theme-toggle .tt-light { display: inline; }
-    html:not([data-theme])    .theme-toggle .tt-auto  { display: inline; }
-    html:not([data-theme])    .theme-toggle .tt-label::after { content: 'auto'; }
-    html[data-theme="dark"]   .theme-toggle .tt-label::after { content: 'dark'; }
-    html[data-theme="light"]  .theme-toggle .tt-label::after { content: 'light'; }
-
-    /* ---------- Entrance animation ---------- */
-    .ve-in { opacity: 0; animation: ve-in var(--dur-slow) var(--ease-out) forwards; }
-
+    .ve-in { animation: ve-in 400ms var(--ease) both; }
     @keyframes ve-in {
       from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* ---------- Hand-built SVG draw-in ---------- */
-    .ve-draw {
-      stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation: ve-draw 800ms var(--ease-in-out) forwards;
-    }
-    @keyframes ve-draw { to { stroke-dashoffset: 0; } }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
-      .ve-in { opacity: 1; }
-      .ve-draw { stroke-dasharray: none; stroke-dashoffset: 0; }
+    }
+
+    .diagram {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      overflow-x: auto;
+    }
+    /* Pele reads these; they follow the page tokens, so a theme change needs no re-render */
+    .diagram {
+      --pele-bg: var(--surface);
+      --pele-fg: var(--ink);
+      --pele-muted: var(--muted);
+      --pele-line: var(--muted);
+      --pele-surface: var(--bg);
+      --pele-surface-alt: var(--surface-2);
+      --pele-border: var(--line);
+      --pele-accent: var(--accent);
+      --pele-font: var(--font-sans);
+      --pele-font-mono: var(--font-mono);
+      --pele-heading-weight: 500;
+      --pele-title-weight: 500;
+      --pele-radius: 4px;
+    }
+    .diagram pre.mermaid { font-family: var(--font-mono); font-size: var(--fs-small); color: var(--muted); white-space: pre-wrap; }
+    .diagram .pele { display: block; margin: 0 auto; }
+    .pele-node.focal :is(rect, path, polygon, circle, ellipse) { stroke: var(--accent); stroke-width: 2px; }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 24px;
+      margin-top: 16px;
+      font-size: var(--fs-small);
+      color: var(--muted);
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 8px; }
+    .swatch { width: 14px; height: 10px; border-radius: 2px; border: 1.5px solid var(--line); }
+    .swatch.accent { border-color: var(--accent); }
+    .swatch.dashed { border-style: dashed; border-color: var(--muted); }
+
+    .ve-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: ve-draw 700ms var(--ease) forwards; }
+    @keyframes ve-draw { to { stroke-dashoffset: 0; } }
+
+    @media (max-width: 640px) {
+      main { padding: 72px 16px 32px; gap: 48px; }
+      .panel { padding: 16px; }
+      .theme-toggle { top: 12px; right: 12px; }
     }
   </style>
 </head>
 <body>
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Theme: auto">
-    <span class="tt-glyph tt-auto">◐</span>
-    <span class="tt-glyph tt-light">☀</span>
-    <span class="tt-glyph tt-dark">☾</span>
-    <span class="tt-label"></span>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme: system" title="Theme: system" hidden>
+    <svg class="tt-system" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+    <svg class="tt-light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="tt-dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
   </button>
 
   <main>
     <header class="ve-in">
-      <p class="eyebrow">System Overview</p>
-      <h1>How Authentication Works</h1>
-      <p class="subtitle">A request's journey from login form to session token.</p>
+      <h1>How authentication works</h1>
+      <p class="lede">A request's path from the login form to a session token.</p>
     </header>
 
-    <section class="section ve-in" style="animation-delay: 60ms;">
-      <!-- ============ MERMAID DIAGRAM ============ -->
-      <div class="diagram-wrap">
-        <pre class="mermaid" id="mermaid-diagram">
+    <section class="ve-in" style="animation-delay: 60ms;">
+      <!-- ============ MERMAID SOURCE, RENDERED BY PELE ============ -->
+      <div class="diagram">
+        <pre class="mermaid" data-label="Flowchart: login form to auth service; valid credentials issue a JWT and establish a session, invalid ones are rejected with 401">
 flowchart TD
-  A["Login Form"] --> B["Auth Service"]
+  A["Login form"] --> B["Auth service"]
   B --> C{"Valid credentials?"}
   C -->|Yes| D["Issue JWT"]
   C -->|No| E["Reject with 401"]
-  D --> F["Session Established"]
+  D --> F["Session established"]
   class D,F focal
-          </pre>
+        </pre>
       </div>
       <div class="legend">
         <span><i class="swatch accent"></i> Focal path</span>
-        <span><i class="swatch muted"></i> Supporting component</span>
-        <span><i class="swatch dashed"></i> Optional / async</span>
+        <span><i class="swatch"></i> Supporting step</span>
+        <span><i class="swatch dashed"></i> Optional or async</span>
       </div>
-      <!-- ============ /MERMAID ============ -->
+      <!-- ============ /MERMAID SOURCE ============ -->
 
-      <!-- ============ ALTERNATIVE: HAND-BUILT SVG (replace the mermaid block above) ============
-      <div class="diagram-wrap">
+      <!-- ============ ALTERNATIVE: HAND-BUILT SVG (replace the block above) ============
+      <div class="diagram">
         <svg viewBox="0 0 900 400" role="img" aria-labelledby="diagram-title diagram-desc"
              style="width: 100%; height: auto; max-width: 900px; margin: 0 auto; display: block;">
           <title id="diagram-title">Authentication flow</title>
-          <desc id="diagram-desc">A user request passes through the auth service which validates credentials and issues a token.</desc>
+          <desc id="diagram-desc">A user request passes through the auth service, which validates credentials and issues a token.</desc>
           <defs>
             <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <polygon points="0 0, 8 3, 0 6" fill="var(--color-muted)"/>
+              <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
             </marker>
           </defs>
-          <line class="ve-draw" pathLength="1" x1="200" y1="200" x2="300" y2="200" stroke="var(--color-muted)" stroke-width="1.2" marker-end="url(#arrow)"/>
-          <rect x="80" y="170" width="120" height="60" rx="6" fill="var(--color-paper)" stroke="var(--color-ink)" stroke-width="1"/>
-          <text x="140" y="205" text-anchor="middle" font-size="14" font-weight="600" fill="var(--color-ink)">Login Form</text>
-          <rect class="focal" x="300" y="170" width="120" height="60" rx="6" fill="var(--color-paper)" stroke="var(--color-accent)" stroke-width="1.5"/>
-          <text x="360" y="205" text-anchor="middle" font-size="14" font-weight="600" fill="var(--color-ink)">Auth Service</text>
+          <line class="ve-draw" pathLength="1" x1="200" y1="200" x2="300" y2="200" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <rect x="80" y="170" width="120" height="60" rx="6" fill="var(--bg)" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="140" y="205" text-anchor="middle" font-size="14" font-family="var(--font-sans)" fill="var(--ink)">Login form</text>
+          <rect x="300" y="170" width="120" height="60" rx="6" fill="var(--bg)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="360" y="205" text-anchor="middle" font-size="14" font-family="var(--font-sans)" fill="var(--ink)">Auth service</text>
         </svg>
       </div>
       ============ /HAND-BUILT SVG ============ -->
     </section>
 
-    <section class="section ve-in" style="animation-delay: 120ms;">
+    <section class="ve-in" style="animation-delay: 120ms;">
       <h2>What to notice</h2>
       <ul class="takeaways">
-        <li>The auth service is the single decision point — all paths converge there</li>
-        <li>Invalid credentials exit early; no downstream components are touched</li>
+        <li>The auth service is the single decision point; every path goes through it</li>
+        <li>Bad credentials exit early, before any downstream service is touched</li>
       </ul>
     </section>
 
-    <footer class="colophon">
-      Generated with visual-explainer
-    </footer>
+    <footer>Generated with visual-explainer</footer>
   </main>
 
-  <!-- Theme toggle -->
   <script>
     (function () {
       const KEY = 'visual-explainer:theme';
-      const ORDER = ['auto', 'light', 'dark'];
-      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const ORDER = ['system', 'light', 'dark'];
+      const root = document.documentElement;
+      const btn = document.getElementById('themeToggle');
 
       function apply(theme) {
-        if (theme === 'auto') {
-          document.documentElement.removeAttribute('data-theme');
-        } else {
-          document.documentElement.setAttribute('data-theme', theme);
-        }
-        const btn = document.getElementById('themeToggle');
-        if (btn) btn.title = 'Theme: ' + theme;
-        document.documentElement.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
+        if (theme === 'system') root.removeAttribute('data-theme');
+        else root.setAttribute('data-theme', theme);
+        btn.setAttribute('aria-label', 'Theme: ' + theme);
+        btn.title = 'Theme: ' + theme;
+        root.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
       }
 
-      const saved = localStorage.getItem(KEY);
-      if (saved && ORDER.includes(saved)) apply(saved);
+      let saved = null;
+      try { saved = localStorage.getItem(KEY); } catch (e) {}
+      if (ORDER.includes(saved)) apply(saved);
 
-      mq.addEventListener('change', () => {
-        if (!document.documentElement.dataset.theme) {
-          document.documentElement.dispatchEvent(new CustomEvent('themechange', { detail: 'auto' }));
-        }
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (!root.dataset.theme) root.dispatchEvent(new CustomEvent('themechange', { detail: 'system' }));
       });
 
-      const btn = document.getElementById('themeToggle');
-      if (btn) btn.addEventListener('click', () => {
-        const current = document.documentElement.dataset.theme || 'auto';
-        const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
-        localStorage.setItem(KEY, next);
+      btn.hidden = false;
+      btn.addEventListener('click', () => {
+        const next = ORDER[(ORDER.indexOf(root.dataset.theme || 'system') + 1) % ORDER.length];
+        try { localStorage.setItem(KEY, next); } catch (e) {}
         apply(next);
       });
     })();
   </script>
 
-  <!-- Mermaid via CDN -->
+  <!-- Pele renders the Mermaid source to themeable SVG. If it fails, the source stays visible. -->
   <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import { mount } from 'https://cdn.jsdelivr.net/npm/pele@1.3.0/dist/pele.js';
 
-    const LIGHT_VARS = {
-      primaryColor: '#f8f5ef',
-      primaryBorderColor: '#2b2824',
-      primaryTextColor: '#2b2824',
-      secondaryColor: '#eee9de',
-      secondaryBorderColor: '#58534c',
-      secondaryTextColor: '#2b2824',
-      tertiaryColor: '#f5e5dc',
-      tertiaryBorderColor: '#c23c14',
-      tertiaryTextColor: '#2b2824',
-      lineColor: '#58534c',
-      fontSize: '15px',
-      fontFamily: "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
-      noteBkgColor: '#f6eed5',
-      noteTextColor: '#2b2824',
-      noteBorderColor: '#c5a84e'
-    };
-    const DARK_VARS = {
-      primaryColor: '#23201c',
-      primaryBorderColor: '#88817a',
-      primaryTextColor: '#efedeb',
-      secondaryColor: '#2e2a25',
-      secondaryBorderColor: '#58534c',
-      secondaryTextColor: '#efedeb',
-      tertiaryColor: '#3a241c',
-      tertiaryBorderColor: '#d66940',
-      tertiaryTextColor: '#efedeb',
-      lineColor: '#88817a',
-      fontSize: '15px',
-      fontFamily: "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
-      noteBkgColor: '#33302a',
-      noteTextColor: '#efedeb',
-      noteBorderColor: '#c5a84e'
-    };
-
-    function isDark() {
-      return document.documentElement.dataset.theme
-        ? document.documentElement.dataset.theme === 'dark'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    function renderDiagram() {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'base',
-        look: 'classic',
-        themeVariables: isDark() ? DARK_VARS : LIGHT_VARS
-      });
-      mermaid.run({ nodes: [document.getElementById('mermaid-diagram')] });
-    }
-
-    renderDiagram();
-
-    document.documentElement.addEventListener('themechange', () => {
-      const el = document.getElementById('mermaid-diagram');
-      if (el) {
-        el.removeAttribute('data-processed');
-        el.innerHTML = el.textContent;
-        renderDiagram();
+    await document.fonts.ready;
+    for (const el of document.querySelectorAll('pre.mermaid')) {
+      const source = el.textContent;
+      const box = document.createElement('div');
+      box.setAttribute('role', 'img');
+      box.setAttribute('aria-label', el.dataset.label || 'Diagram');
+      try {
+        el.replaceWith(box);
+        mount(box, source, { fontSize: 14 });
+      } catch (err) {
+        box.replaceWith(el);
+        console.error(err);
       }
-    });
+    }
   </script>
 </body>
 </html>
