@@ -1,0 +1,6 @@
+# Checks before every push. Install once per clone: `lefthook install`.
+pre-push:
+  jobs:
+    - name: skills
+      glob: "skills/**"
+      run: bun scripts/check-skills.mjs

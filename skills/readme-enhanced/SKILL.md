@@ -110,7 +110,7 @@ Structure the document so a reader gets value in their first 60 seconds:
    - 3–5 bullet points or side-by-side visual cards emphasizing outcomes, not just mechanisms.
 5. **Docs Delegation & Next Steps**:
    - Do NOT dump full API tables or multi-page configuration guides here.
-   - Provide clear signposts: *"For advanced configuration, plugins, and full API reference, see [the documentation](./docs)."*
+   - Provide clear signposts: *"For advanced configuration, plugins, and full API reference, see `[the documentation](./docs)`."*
 
 ---
 
