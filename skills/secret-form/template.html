@@ -99,12 +99,12 @@
 
   main { max-width: 520px; margin: 0 auto; }
 
-  .eyebrow {
-    margin: 0 0 var(--space-3);
+  .stamp {
+    display: block;
+    margin-bottom: var(--space-1);
     font-family: var(--font-pixel);
     font-size: var(--text-micro);
-    font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
   }
@@ -272,7 +272,6 @@
 </head>
 <body>
 <main>
-  <p class="eyebrow">Secret request</p>
   <h1>{{TITLE}}</h1>
   <p class="purpose">{{PURPOSE}}</p>
   <div class="panel">{{DESTINATION}}</div>
@@ -286,7 +285,7 @@
     </div>
   </form>
 
-  <footer>{{FOOTER}}</footer>
+  <footer><span class="stamp">Secret form</span>{{FOOTER}}</footer>
 </main>
 <script>
 for (const button of document.querySelectorAll(".reveal")) {

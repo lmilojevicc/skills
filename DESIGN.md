@@ -234,6 +234,9 @@ decoration, one hairline above, 32px of space.
 - No second accent hue. Emphasis is ink.
 - No shadow on anything that is not floating over content.
 - No pixel heading, no two ornamental devices on one page.
+- No eyebrow that paraphrases the heading. `SECRET REQUEST` above
+  "Secrets requested" is slop; if the eyebrow repeats the title, delete it. One
+  pixel stamp per page, carried by the footer or an index.
 - No emoji as UI, no icon set mixed with text glyphs.
 - No remote assets other than the font stylesheet.
 

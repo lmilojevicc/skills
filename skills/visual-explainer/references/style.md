@@ -96,6 +96,7 @@ as generated; leave it out.
 | Don't | Instead |
 |---|---|
 | A pixel heading | Sans heading; pixel is an eyebrow or a footer stamp, once |
+| An eyebrow that paraphrases the title (`SECRET REQUEST` over `Secrets requested`) | Delete it. One pixel stamp per page, in the footer or an index |
 | An eyebrow over every section | One page index at the top, then space |
 | Tiny uppercase letter-spaced labels in sans | Mono for identifiers, sentence case for prose |
 | Pill badges everywhere | A mono badge for one status, with a dot and a label |
