@@ -141,11 +141,11 @@ Templates are always available; copy the closest one and adapt. The templates sh
 
 These apply to every page. Details in the references.
 
-1. **Type**: IBM Plex Mono for headings, figures and code; IBM Plex Sans for everything else, labels and axis ticks included. Four sizes. Sentence case. Load every weight used, `display=swap`
+1. **Type**: Geist Sans for headings and text, Geist Mono for figures, code and identifiers, Geist Pixel for at most one eyebrow or footer stamp. Four sizes. Sentence case. Load from Bunny Fonts, `display=swap`
 2. **Palette**: the hex tokens in [`references/style.md`](references/style.md), shared by CSS, SVG, Pele and Chart.js. No cream with terracotta, no violet/indigo/fuchsia, no neon, no gradients
-3. **Accent discipline**: the accent marks 1–2 focal elements per visual. Everything else ink, muted or `--bar`
-4. **No ornaments**: no eyebrows above titles, no tiny tracked uppercase labels, no pill badges, no 01/02/03 numbering, no hairline section dividers, no shadows on things at rest, no icons in tinted circles, no emoji
-5. **Surfaces by tone**: panels are `--surface` on `--bg`, no borders around them, one 6px radius, no card in card
+3. **Accent discipline**: there is no accent hue. The focal element is `--ink` while its neighbours are `--bar` or `--muted`; one or two per visual. Status colour is the only hue, and only with a label
+4. **One ornament, repeated**: the pixel eyebrow or index, the mono badge and the hairline. Nothing else — no gradients, no glows, no icons in tinted circles, no emoji
+5. **Surfaces by tone**: panels are `--surface` on `--bg`, one 10px radius, no card in card. Shadows only on floating surfaces (`--shadow-1/2/3`); glass only for popovers and sheets
 6. **Complexity budgets**: ~9 nodes per diagram, 8 bars, 3 line series. Over budget → split into overview + detail
 7. **No horizontal overflow** at any width; `min-width: 0` on grid/flex children; `overflow-x: clip` on html and body; equal side margins
 8. **Interaction layer ships by default**: theme toggle (icon button; system by default, then light and dark; persisted), one entrance under 500ms, hover where it adds signal. `transform`/`opacity` only; `prefers-reduced-motion` makes everything instant

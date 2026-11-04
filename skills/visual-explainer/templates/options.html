@@ -5,41 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Which sidebar layout?</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23171717'/></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.bunny.net/css?family=geist:400,500,600|geist-mono:400,500|geist-pixel:400&display=swap">
   <style>
     :root {
-      --bg:        #fafaf9;
-      --surface:   #f1f1ef;
-      --surface-2: #e6e6e3;
-      --line:      #d6d6d2;
-      --bar:       #cfcfca;
-      --ink:       #171717;
-      --muted:     #5c5c5c;
-      --accent:    #0b62d6;
+      color-scheme: light;
+      --bg:        #fbfbfa;
+      --surface:   #ffffff;
+      --surface-2: #f7f7f5;
+      --line:      #e4e4e1;
+      --bar:       #d8d8d3;
+      --ink:       #111111;
+      --muted:     #6b6b66;
+      --subtle:    #9c9c96;
+      --accent:    #111111;
+      --border-strong: #8a8a85;
+      --danger:    #a4342c;
+      --warning:   #8a6a16;
+      --success:   #4a6b4f;
 
-      --font-sans: "IBM Plex Sans", ui-sans-serif, sans-serif;
-      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+      --font-pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
 
       --fs-title: clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem);
-      --fs-head:  1.125rem;
-      --fs-body:  1rem;
+      --fs-head:  1.25rem;
+      --fs-body:  0.9375rem;
       --fs-small: 0.8125rem;
 
-      --radius: 6px;
-      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --radius: 10px;
+      --ease: cubic-bezier(0.2, 0, 0, 1);
+      --shadow-1: 0 1px 2px rgb(0 0 0 / .05), 0 1px 3px rgb(0 0 0 / .04);
+      --shadow-2: 0 4px 14px -4px rgb(0 0 0 / .12), 0 2px 6px -3px rgb(0 0 0 / .08);
+      --shadow-3: 0 16px 40px -12px rgb(0 0 0 / .22), 0 4px 12px -6px rgb(0 0 0 / .12);
+      --glass-bg: rgb(255 255 255 / .60);
+      --glass-border: rgb(17 17 17 / .08);
+      --glass-rim: rgb(255 255 255 / .65);
     }
 
     html[data-theme="dark"] {
-      --bg:        #111111;
-      --surface:   #1b1b1b;
-      --surface-2: #262626;
-      --line:      #333333;
-      --bar:       #444444;
-      --ink:       #ececec;
-      --muted:     #a1a1a1;
-      --accent:    #5b9cf5;
+      color-scheme: dark;
+      --bg:        #0b0b0c;
+      --surface:   #141416;
+      --surface-2: #111113;
+      --line:      #25252a;
+      --bar:       #3a3a3f;
+      --ink:       #ededed;
+      --muted:     #9d9da4;
+      --subtle:    #67676d;
+      --accent:    #ededed;
+      --border-strong: #6a6a73;
+      --danger:    #d98079;
+      --warning:   #d8bb7a;
+      --success:   #93b79a;
+      --shadow-1: 0 1px 2px rgb(0 0 0 / .40), 0 1px 3px rgb(0 0 0 / .30);
+      --shadow-2: 0 6px 18px -6px rgb(0 0 0 / .55), 0 2px 6px -3px rgb(0 0 0 / .40);
+      --shadow-3: 0 20px 48px -16px rgb(0 0 0 / .70), 0 6px 16px -8px rgb(0 0 0 / .50);
+      --glass-bg: rgb(22 22 26 / .55);
+      --glass-border: rgb(255 255 255 / .14);
+      --glass-rim: rgb(255 255 255 / .18);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -78,10 +102,10 @@
     main > * { min-width: 0; }
 
     h1, h2, h3 {
-      font-family: var(--font-mono);
-      font-weight: 500;
+      font-family: var(--font-sans);
+      font-weight: 600;
       line-height: 1.15;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
     }
     h1 { font-size: var(--fs-title); max-width: 22ch; }
     h2 { font-size: var(--fs-head); margin-bottom: 16px; }

@@ -3,66 +3,299 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:,">
 <title>{{TITLE}}</title>
+<link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.bunny.net/css?family=geist:400,500,600|geist-mono:400,500|geist-pixel:400&display=swap">
+
 <style>
-  :root { color-scheme: light dark; --fg:#111; --muted:#5b6470; --bg:#fff;
-          --card:#f5f6f8; --line:#d7dbe0; --accent:#1f6feb; }
-  @media (prefers-color-scheme: dark) {
-    :root { --fg:#e8eaed; --muted:#9aa4b2; --bg:#101317; --card:#171b21;
-            --line:#2a3038; --accent:#6ea8fe; }
+  /* Design tokens: see DESIGN.md at the repository root. Keep this block verbatim. */
+  :root {
+    color-scheme: light dark;
+
+    --canvas:            #fbfbfa;
+    --surface:           #ffffff;
+    --surface-recessed:  #f7f7f5;
+    --ink:               #111111;
+    --muted:             #6b6b66;
+    --subtle:            #9c9c96;
+    --border:            #e4e4e1;
+    --border-hairline:   #eeeeec;
+    --border-strong:     #8a8a85;
+    --primary:           #111111;
+    --primary-hover:     #000000;
+    --primary-foreground:#ffffff;
+    --ring:              #11111180;
+    --danger:            #a4342c;
+    --warning:           #8a6a16;
+    --success:           #4a6b4f;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / .05), 0 1px 3px rgb(0 0 0 / .04);
+    --shadow-2: 0 4px 14px -4px rgb(0 0 0 / .12), 0 2px 6px -3px rgb(0 0 0 / .08);
+    --shadow-3: 0 16px 40px -12px rgb(0 0 0 / .22), 0 4px 12px -6px rgb(0 0 0 / .12);
+    --glass-bg: rgb(255 255 255 / .60);
+    --glass-border: rgb(17 17 17 / .08);
+    --glass-rim: rgb(255 255 255 / .65);
+
+    --font-sans:  "Geist", "Geist Sans", ui-sans-serif, system-ui, -apple-system,
+                  "Segoe UI", sans-serif;
+    --font-mono:  "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --font-pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
+
+    --text-display: 1.75rem;
+    --text-title:   1.25rem;
+    --text-body:    0.9375rem;
+    --text-small:   0.8125rem;
+    --text-micro:   0.6875rem;
+
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+    --radius-sm: 6px; --radius: 10px; --radius-lg: 14px; --radius-pill: 999px;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --duration: 150ms;
   }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --canvas:            #0b0b0c;
+      --surface:           #141416;
+      --surface-recessed:  #111113;
+      --ink:               #ededed;
+      --muted:             #9d9da4;
+      --subtle:            #67676d;
+      --border:            #25252a;
+      --border-hairline:   #1f1f23;
+      --border-strong:     #6a6a73;
+      --primary:           #ededed;
+      --primary-hover:     #ffffff;
+      --primary-foreground:#0b0b0c;
+      --ring:              #ededed80;
+      --danger:            #d98079;
+      --warning:           #d8bb7a;
+      --success:           #93b79a;
+      --shadow-1: 0 1px 2px rgb(0 0 0 / .40), 0 1px 3px rgb(0 0 0 / .30);
+      --shadow-2: 0 6px 18px -6px rgb(0 0 0 / .55), 0 2px 6px -3px rgb(0 0 0 / .40);
+      --shadow-3: 0 20px 48px -16px rgb(0 0 0 / .70), 0 6px 16px -8px rgb(0 0 0 / .50);
+      --glass-bg: rgb(22 22 26 / .55);
+      --glass-border: rgb(255 255 255 / .14);
+      --glass-rim: rgb(255 255 255 / .18);
+    }
+  }
+
   * { box-sizing: border-box; }
-  body { margin:0; padding:32px 20px; background:var(--bg); color:var(--fg);
-         font:15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width:560px; margin:0 auto; }
-  h1 { font-size:20px; margin:0 0 6px; }
-  .purpose { margin:0 0 20px; color:var(--muted); }
-  .dest { background:var(--card); border:1px solid var(--line); border-radius:10px;
-          padding:12px 14px; margin:0 0 22px; font-size:13.5px; }
-  .field { margin:0 0 18px; }
-  label { display:block; font-weight:600; margin-bottom:2px; }
-  code { font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
-  .tag { font-weight:400; font-size:12px; color:var(--muted); margin-left:6px; }
-  .hint { margin:0 0 6px; color:var(--muted); font-size:13px; }
-  .row { display:flex; gap:8px; }
-  input { flex:1; padding:9px 11px; font:14px ui-monospace, monospace;
-          color:var(--fg); background:var(--bg); border:1px solid var(--line);
-          border-radius:8px; }
-  input:focus { outline:2px solid var(--accent); outline-offset:1px; }
-  .reveal { padding:0 12px; font-size:13px; color:var(--muted); background:var(--card);
-            border:1px solid var(--line); border-radius:8px; cursor:pointer; }
-  .actions { display:flex; gap:10px; margin-top:26px; }
-  button.primary { flex:1; padding:11px; font-size:15px; font-weight:600; color:#fff;
-                   background:var(--accent); border:0; border-radius:9px; cursor:pointer; }
-  button.plain { padding:11px 16px; font-size:15px; color:var(--muted);
-                 background:transparent; border:1px solid var(--line);
-                 border-radius:9px; cursor:pointer; }
-  footer { margin-top:26px; padding-top:14px; border-top:1px solid var(--line);
-           color:var(--muted); font-size:12px; }
-  .warn { color:#b4530a; }
-  @media (prefers-color-scheme: dark) { .warn { color:#f0a35e; } }
-</style></head>
-<body><main>
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    padding: var(--space-8) var(--space-5) var(--space-8);
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main { max-width: 520px; margin: 0 auto; }
+
+  .eyebrow {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-pixel);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-display);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  .purpose {
+    margin: 0 0 var(--space-6);
+    color: var(--muted);
+  }
+
+  .panel {
+    margin: 0 0 var(--space-6);
+    padding: var(--space-4);
+    background: var(--surface-recessed);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: var(--text-small);
+    line-height: 1.5;
+  }
+
+  .panel code { font-family: var(--font-mono); font-size: 0.95em; }
+
+  .field { margin: 0 0 var(--space-4); }
+
+  .field-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+  }
+
+  .field-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .tag { font-size: var(--text-micro); color: var(--subtle); }
+
+  .hint {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-small);
+    color: var(--muted);
+  }
+
+  .row { display: flex; gap: var(--space-2); }
+
+  input[type="password"],
+  input[type="text"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    padding: 0 var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    transition: border-color var(--duration) var(--ease),
+                outline-color var(--duration) var(--ease);
+  }
+
+  input:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-color: var(--ink);
+  }
+
+  .reveal {
+    flex: 0 0 auto;
+    height: 44px;
+    padding: 0 var(--space-3);
+    font-family: var(--font-sans);
+    font-size: var(--text-small);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: color var(--duration) var(--ease),
+                border-color var(--duration) var(--ease);
+  }
+
+  .reveal:hover { color: var(--ink); border-color: var(--border-strong); }
+  .reveal:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .reveal:active { transform: scale(0.96); }
+
+  .note {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-small);
+    color: var(--muted);
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-6);
+  }
+
+  button.primary {
+    flex: 1 1 auto;
+    height: 44px;
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--primary-foreground);
+    background: var(--primary);
+    border: 0;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background var(--duration) var(--ease),
+                transform var(--duration) var(--ease);
+  }
+
+  button.primary:hover { background: var(--primary-hover); }
+  button.primary:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  button.primary:active { transform: scale(0.96); }
+
+  button.ghost {
+    flex: 0 0 auto;
+    height: 44px;
+    padding: 0 var(--space-4);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: color var(--duration) var(--ease),
+                border-color var(--duration) var(--ease);
+  }
+
+  button.ghost:hover { color: var(--ink); border-color: var(--border-strong); }
+  button.ghost:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  button.ghost:active { transform: scale(0.96); }
+
+  footer {
+    margin-top: var(--space-7);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-hairline);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    line-height: 1.6;
+    color: var(--subtle);
+    word-break: break-word;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+    button:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Secret request</p>
   <h1>{{TITLE}}</h1>
   <p class="purpose">{{PURPOSE}}</p>
-  <div class="dest">{{DESTINATION}}</div>
+  <div class="panel">{{DESTINATION}}</div>
+
   <form method="post" action="{{ACTION}}" autocomplete="off">
 {{FIELDS}}
-    <p class="hint warn">Type here, not into the agent's chat.</p>
+    <p class="note">Type here, not into the agent's chat.</p>
     <div class="actions">
       <button class="primary" type="submit" name="action" value="submit">Save</button>
-      <button class="plain" type="submit" name="action" value="cancel" formnovalidate>Cancel</button>
+      <button class="ghost" type="submit" name="action" value="cancel" formnovalidate>Cancel</button>
     </div>
   </form>
+
   <footer>{{FOOTER}}</footer>
 </main>
 <script>
-for (const b of document.querySelectorAll(".reveal")) {
-  b.addEventListener("click", () => {
-    const input = document.getElementById(b.dataset.for);
+for (const button of document.querySelectorAll(".reveal")) {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.for);
     const shown = input.type === "text";
     input.type = shown ? "password" : "text";
-    b.textContent = shown ? "show" : "hide";
+    button.textContent = shown ? "Show" : "Hide";
+    button.setAttribute("aria-pressed", String(!shown));
   });
 }
 </script>

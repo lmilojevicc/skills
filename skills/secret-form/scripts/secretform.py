@@ -86,15 +86,24 @@ def existing_keys(path: Path) -> set[str]:
 
 
 def field_html(name: str, label: str, already: bool) -> str:
-    tag = '<span class="tag">already set — saving replaces it</span>' if already else ""
     safe = html.escape(name)
+    tag = '<span class="tag">already set</span>' if already else ""
+    hint = (
+        f'<p class="hint" id="h-{safe}">{html.escape(label)}</p>'
+        if label
+        else ""
+    )
+    described = f' aria-describedby="h-{safe}"' if label else ""
     return f"""    <div class="field">
-      <label for="f-{safe}"><code>{safe}</code> {tag}</label>
-      <p class="hint">{html.escape(label)}</p>
+      <div class="field-head">
+        <label class="field-name" for="f-{safe}">{safe}</label>{tag}
+      </div>
+      {hint}
       <div class="row">
-        <input id="f-{safe}" name="{safe}" type="password" required
+        <input id="f-{safe}" name="{safe}" type="password" required{described}
                autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
-        <button type="button" class="reveal" data-for="f-{safe}">show</button>
+        <button type="button" class="reveal" data-for="f-{safe}" aria-pressed="false"
+                aria-label="Show {safe}">Show</button>
       </div>
     </div>"""
 
@@ -111,6 +120,28 @@ def render(template: str, names, labels, purpose, destination, action, footer,
         .replace("{{FOOTER}}", html.escape(footer))
         .replace("{{FIELDS}}", fields)
     )
+
+
+MESSAGE_PAGE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<style>
+  :root {{ color-scheme: light dark; --canvas:#fbfbfa; --ink:#111111;
+          --muted:#6b6b66; --border:#eeeeec;
+          --font-sans:"Geist","Geist Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }}
+  @media (prefers-color-scheme: dark) {{
+    :root {{ --canvas:#0b0b0c; --ink:#ededed; --muted:#9d9da4; --border:#1f1f23; }}
+  }}
+  body {{ margin:0; padding:64px 24px; background:var(--canvas); color:var(--ink);
+         font-family:var(--font-sans); font-size:15px; line-height:1.55;
+         -webkit-font-smoothing:antialiased; }}
+  main {{ max-width:520px; margin:0 auto; }}
+  h1 {{ font-size:1.75rem; line-height:1.15; letter-spacing:-0.02em; font-weight:600;
+       margin:0 0 8px; }}
+  p {{ color:var(--muted); margin:0; padding-top:16px; border-top:1px solid var(--border); }}
+</style></head>
+<body><main><h1>{title}</h1><p>{body}</p></main></body></html>"""
 
 
 class State:
@@ -141,10 +172,12 @@ def build_handler(state: State, token: str, page: str, names: list[str]):
             self.close_connection = True
 
         def message(self, title: str, text: str):
-            self.send(200 if title != "Not found" else 404,
-                      f"<!doctype html><meta charset=utf-8><title>{html.escape(title)}</title>"
-                      f"<body style='font:16px system-ui;padding:48px;max-width:480px;margin:auto'>"
-                      f"<h1 style='font-size:19px'>{html.escape(title)}</h1><p>{html.escape(text)}</p>")
+            self.send(
+                200 if title != "Not found" else 404,
+                MESSAGE_PAGE.format(
+                    title=html.escape(title), body=html.escape(text)
+                ),
+            )
 
         def do_GET(self):
             if urllib.parse.urlsplit(self.path).path != f"/{token}":
