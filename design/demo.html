@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Monochrome — design system</title>
+<link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.bunny.net/css?family=geist:400,500,600|geist-mono:400,500|geist-pixel:400&display=swap">
+
+<style>
+
+  :root {
+    color-scheme: light;
+    --canvas:#fbfbfa; --surface:#fff; --recessed:#f7f7f5;
+    --ink:#111; --muted:#6b6b66; --subtle:#9c9c96;
+    --border:#e4e4e1; --hairline:#eeeeec; --strong:#8a8a85;
+    --primary:#111; --primary-fg:#fff; --ring:#11111180;
+    --danger:#a4342c; --warning:#8a6a16; --success:#4a6b4f;
+    /* Diagram status: mid-tones that pass 3:1 on both themes */
+    --diagram-ok:#6f8f76; --diagram-warn:#a8873a; --diagram-bad:#c05a52;
+    /* Elevation: layered transparent shadows, only for floating surfaces */
+    --shadow-1: 0 1px 2px rgb(0 0 0 / .05), 0 1px 3px rgb(0 0 0 / .04);
+    --shadow-2: 0 4px 14px -4px rgb(0 0 0 / .12), 0 2px 6px -3px rgb(0 0 0 / .08);
+    --shadow-3: 0 16px 40px -12px rgb(0 0 0 / .22), 0 4px 12px -6px rgb(0 0 0 / .12);
+    --glass-bg: rgb(255 255 255 / .60);
+    --glass-border: rgb(17 17 17 / .08);
+    --glass-rim: rgb(255 255 255 / .65);
+    --font-sans:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono:"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --font-pixel:"Geist Pixel", "Geist Mono", ui-monospace, monospace;
+    --radius:10px; --ease:cubic-bezier(.2,0,0,1);
+  }
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --canvas:#0b0b0c; --surface:#141416; --recessed:#111113;
+    --ink:#ededed; --muted:#9d9da4; --subtle:#67676d;
+    --border:#25252a; --hairline:#1f1f23; --strong:#6a6a73;
+    --primary:#ededed; --primary-fg:#0b0b0c; --ring:#ededed80;
+    --danger:#d98079; --warning:#d8bb7a; --success:#93b79a;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / .40), 0 1px 3px rgb(0 0 0 / .30);
+    --shadow-2: 0 6px 18px -6px rgb(0 0 0 / .55), 0 2px 6px -3px rgb(0 0 0 / .40);
+    --shadow-3: 0 20px 48px -16px rgb(0 0 0 / .70), 0 6px 16px -8px rgb(0 0 0 / .50);
+    --glass-bg: rgb(22 22 26 / .55);
+    --glass-border: rgb(255 255 255 / .14);
+    --glass-rim: rgb(255 255 255 / .18);
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--canvas); color:var(--ink);
+         font-family:var(--font-sans); font-size:15px; line-height:1.55;
+         -webkit-font-smoothing:antialiased; }
+  .chrome { display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:12px 20px;
+            border-bottom:1px dashed var(--border); font:11px/1.4 var(--font-mono);
+            color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+  .chrome b { font-weight:500; color:var(--subtle); margin-inline-end:4px; }
+  .chrome button { font:inherit; text-transform:uppercase; padding:5px 10px; color:var(--muted);
+                   background:transparent; border:1px solid var(--border); border-radius:6px; cursor:pointer; }
+  .chrome button[aria-pressed="true"] { color:var(--ink); border-color:var(--strong); }
+  main { max-width:760px; margin:0 auto; padding:56px 24px 96px; }
+  .index { font-family:var(--font-pixel); font-size:12px; font-weight:400; letter-spacing:.12em;
+           text-transform:uppercase; color:var(--muted); }
+  html.no-pixel .index { font-family:var(--font-mono); letter-spacing:.1em; }
+  h1 { margin:12px 0 8px; font-size:28px; line-height:1.15; letter-spacing:-.02em; font-weight:600; }
+  .lede { margin:0 0 16px; color:var(--muted); max-width:60ch; }
+  .meta { display:flex; gap:24px; flex-wrap:wrap; padding-top:16px; border-top:1px solid var(--hairline);
+          font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:.04em; }
+  section { margin-top:48px; }
+  .sec-head { display:flex; align-items:baseline; gap:12px; padding-bottom:8px;
+              border-bottom:1px solid var(--border); margin-bottom:24px; }
+  .sec-head h2 { margin:0; font-size:20px; line-height:1.3; letter-spacing:-.01em; font-weight:600; }
+  .spacer { flex:1; }
+  .path { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+  .spec { display:grid; grid-template-columns:112px 1fr; gap:16px; align-items:baseline;
+          padding:12px 0; border-bottom:1px solid var(--hairline); }
+  .spec:last-child { border-bottom:0; }
+  .spec dt { font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:.04em; }
+  .spec dd { margin:0; }
+  .display { font-size:28px; line-height:1.15; letter-spacing:-.02em; font-weight:600; }
+  .title { font-size:20px; line-height:1.3; letter-spacing:-.01em; font-weight:600; }
+  .body { font-size:15px; line-height:1.55; }
+  .small { font-size:13px; line-height:1.5; color:var(--muted); }
+  .pixel-xl { font-family:var(--font-pixel); font-size:34px; line-height:1.1; letter-spacing:.02em; }
+  .micro { font-family:var(--font-pixel); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .mono { font-family:var(--font-mono); font-size:13px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .btn { height:40px; padding:0 16px; font-size:15px; border-radius:var(--radius); cursor:pointer;
+         transition:background 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease), transform 150ms var(--ease); }
+  .btn:active { transform:scale(.96); }
+  .btn.primary { color:var(--primary-fg); background:var(--primary); border:0; font-weight:600; }
+  .btn.primary:hover { background:var(--ink); }
+  .btn.ghost { color:var(--muted); background:transparent; border:1px solid var(--border); }
+  .btn.ghost:hover { color:var(--ink); border-color:var(--strong); }
+  .btn.danger { color:var(--danger); background:transparent; border:1px solid var(--border); }
+  .btn.danger:hover { border-color:var(--danger); }
+  .btn:disabled { color:var(--subtle); background:var(--recessed); border:1px solid var(--border); cursor:not-allowed; }
+  .btn:focus-visible, input:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+  .field { margin-bottom:16px; }
+  .label { font-family:var(--font-mono); font-size:11px; font-weight:500; letter-spacing:.08em;
+           text-transform:uppercase; display:block; margin-bottom:4px; }
+  .hint { margin:0 0 8px; font-size:13px; color:var(--muted); }
+  input[type=text], input[type=password] { width:100%; height:44px; padding:0 12px; color:var(--ink);
+           background:var(--surface); border:1px solid var(--strong); border-radius:var(--radius);
+           font-family:var(--font-mono); font-size:16px; }
+  input.invalid { border-color:var(--danger); }
+  .error { margin:6px 0 0; font-size:13px; color:var(--danger); }
+  .panel { padding:16px; background:var(--recessed); border:1px solid var(--border);
+           border-radius:var(--radius); font-size:13px; line-height:1.5; }
+  code { font-family:var(--font-mono); font-size:.95em; }
+  .kv { display:grid; grid-template-columns:120px 1fr; gap:8px 16px; font-size:13px; margin:16px 0 0; }
+  .kv dt { font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:.04em;
+           text-transform:uppercase; padding-top:2px; }
+  .kv dd { margin:0; }
+  .badge { display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border:1px solid var(--border);
+           border-radius:999px; font-family:var(--font-mono); font-size:11px; letter-spacing:.04em;
+           color:var(--muted); background:var(--surface); }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--success); }
+  .dot.warn { background:var(--warning); } .dot.bad { background:var(--danger); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:start; font-family:var(--font-mono); font-size:11px; font-weight:500;
+       letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:0 0 8px; }
+  td { padding:10px 0; border-top:1px solid var(--hairline); }
+  td.num, th.num { text-align:end; font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  pre { margin:0; padding:16px; overflow:auto; background:var(--recessed); border:1px solid var(--border);
+        border-radius:var(--radius); font-family:var(--font-mono); font-size:13px; line-height:1.6; }
+  .diagram { padding:24px; border:1px solid var(--border); border-radius:var(--radius);
+             background:var(--surface); overflow:auto;
+             --pele-bg: var(--surface); --pele-fg: var(--ink); --pele-muted: var(--muted);
+             --pele-line: var(--ink); --pele-surface: var(--recessed);
+             --pele-surface-alt: var(--recessed); --pele-border: var(--border);
+             --pele-accent: var(--ink); --pele-font: var(--font-sans); --pele-radius: 10px; }
+  .diagram pre { margin:0; border:0; background:transparent; padding:0; }
+  #excalidraw-dark { display:none; }
+  [data-theme="dark"] #excalidraw-light { display:none; }
+  [data-theme="dark"] #excalidraw-dark { display:block; }
+  .diagram svg { max-width:100%; height:auto; }
+  .caption { margin:12px 0 0; font-size:13px; color:var(--muted); }
+  .surface-ladder { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .surface { height:84px; border:1px solid var(--border); border-radius:var(--radius);
+             display:flex; align-items:flex-end; padding:10px;
+             font:11px/1.4 var(--font-mono); color:var(--muted); letter-spacing:.04em; }
+  .surface.canvas { background:var(--canvas); }
+  .surface.recessed { background:var(--recessed); }
+  .surface.card { background:var(--surface); box-shadow:var(--shadow-1); border-color:var(--hairline); }
+  .surface.glass { background:var(--glass-bg); border-color:var(--glass-border);
+                   -webkit-backdrop-filter:blur(14px) saturate(180%);
+                   backdrop-filter:blur(14px) saturate(180%);
+                   box-shadow:var(--shadow-2), inset 0 1px 0 var(--glass-rim); }
+  .nest { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; margin-top:24px; }
+  .nest-outer { padding:8px; border:1px solid var(--border); border-radius:14px;
+                background:var(--surface-recessed); }
+  .nest-inner { height:88px; border-radius:5px; background:var(--surface);
+                border:1px solid var(--border-hairline); box-shadow:var(--shadow-1);
+                display:flex; align-items:center; justify-content:center;
+                font:11px var(--font-mono); color:var(--muted); }
+  .math { font-family:var(--font-mono); font-size:13px; line-height:2; color:var(--muted); }
+  .math b { color:var(--ink); font-weight:500; }
+  .elev-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }
+  .elev { height:88px; border-radius:var(--radius); background:var(--surface);
+          border:1px solid var(--hairline); display:flex; align-items:flex-end; padding:10px;
+          font:11px var(--font-mono); color:var(--muted); }
+  .elev.e1 { box-shadow:var(--shadow-1); }
+  .elev.e2 { box-shadow:var(--shadow-2); }
+  .elev.e3 { box-shadow:var(--shadow-3); }
+  .glass-stage { position:relative; height:320px; border:1px solid var(--border);
+                 border-radius:var(--radius); overflow:hidden; background:var(--surface); }
+  .stage-lines { position:absolute; inset:24px; display:flex; flex-direction:column; gap:12px; }
+  .stage-lines span { display:block; height:10px; border-radius:3px; background:var(--border); }
+  .stage-lines span:nth-child(3n) { width:72%; }
+  .stage-lines span:nth-child(4n) { width:86%; background:var(--border-hairline); }
+  .glass-panel { position:absolute; inset-inline-end:24px; inset-block-end:24px; width:320px;
+                 padding:16px; border-radius:14px; background:var(--glass-bg);
+                 border:1px solid var(--glass-border);
+                 -webkit-backdrop-filter:blur(20px) saturate(180%);
+                 backdrop-filter:blur(20px) saturate(180%);
+                 box-shadow:var(--shadow-3), inset 0 1px 0 var(--glass-rim); }
+  .glass-panel h3 { margin:6px 0 4px; font-size:15px; line-height:1.35; letter-spacing:-.01em; font-weight:600; }
+  .glass-panel .small { margin:0 0 14px; }
+  .glass-panel .btn { height:34px; font-size:13px; padding:0 12px; }
+  .glass-panel .btn.primary { flex:0 0 auto; }
+  footer { margin-top:64px; padding-top:16px; border-top:1px solid var(--hairline);
+           display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+           font-family:var(--font-mono); font-size:11px; color:var(--muted); letter-spacing:.04em; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } .btn:active { transform:none; } }
+</style>
+</head>
+<body>
+  <div class="chrome">
+    <b>chrome</b><span>not part of the page</span>
+    <button id="light" aria-pressed="true">light</button>
+    <button id="dark" aria-pressed="false">dark</button>
+    <button id="pixel" aria-pressed="true">geist pixel</button>
+  </div>
+
+  <main>
+    <div class="index">Monochrome — design system</div>
+    <h1>Tech luxury, one ink ramp</h1>
+    <p class="lede">What a skill page looks like: a form, a report, a diagram. Paper, hairlines, one filled action. The pixel face is the only ornament, and it is repeated, never shouted.</p>
+    <div class="meta">
+      <span>v0.1</span><span>geist sans · mono · pixel</span><span>radius 10</span><span>scale 4px</span>
+    </div>
+
+    <section>
+      <div class="sec-head"><span class="index">01</span><h2>Type</h2><span class="spacer"></span><span class="path">sans / pixel / mono</span></div>
+      <dl style="margin:0">
+        <div class="spec"><dt>display</dt><dd class="display">Secrets requested</dd></div>
+        <div class="spec"><dt>title</dt><dd class="title">Configure the api service</dd></div>
+        <div class="spec"><dt>body</dt><dd class="body">Values typed here go straight to the process that needs them, never through the conversation.</dd></div>
+        <div class="spec"><dt>small</dt><dd class="small">Metadata, hints, notes — 13px, muted, never below 4.5:1.</dd></div>
+        <div class="spec"><dt>pixel 34</dt><dd class="pixel-xl">SECRET REQUEST</dd></div>
+        <div class="spec"><dt>pixel 12</dt><dd class="micro">Section 01 — opened 04 nov</dd></div>
+        <div class="spec"><dt>mono</dt><dd class="mono">OPENAI_API_KEY=<span style="color:var(--muted)">••••</span> · /home/me/app</dd></div>
+      </dl>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">02</span><h2>Actions</h2><span class="spacer"></span><span class="path">one primary per view</span></div>
+      <div class="row">
+        <button class="btn primary">Save</button>
+        <button class="btn ghost">Cancel</button>
+        <button class="btn danger">Delete</button>
+        <button class="btn ghost" disabled>Disabled</button>
+      </div>
+      <p class="small" style="margin-top:12px">Filled ink is the only emphasis. Destructive keeps the shape and takes the desaturated red on its text and hover border.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">03</span><h2>Form</h2><span class="spacer"></span><span class="path">44px · 16px · 3:1</span></div>
+      <div class="field">
+        <label class="label" for="a">OPENAI_API_KEY</label>
+        <p class="hint" id="ah">Key used by the server to call the model.</p>
+        <input id="a" type="password" value="sk-demo" aria-describedby="ah">
+      </div>
+      <div class="field">
+        <label class="label" for="b">STRIPE_SECRET_KEY</label>
+        <p class="hint">Billing, test mode.</p>
+        <input id="b" type="text" class="invalid" value="sk_te" aria-invalid="true">
+        <p class="error">That key is 4 characters long. Expected 32.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">04</span><h2>Panels and data</h2><span class="spacer"></span><span class="path">space over lines</span></div>
+      <div class="panel">Handed to <code>docker compose up</code> as environment variables. <strong>Not written to disk.</strong></div>
+      <dl class="kv">
+        <dt>writes to</dt><dd class="mono">/tmp/demo/.env.local</dd>
+        <dt>mode</dt><dd><span class="badge"><span class="dot"></span>0600</span></dd>
+        <dt>expires</dt><dd>15 minutes <span class="badge" style="margin-inline-start:8px"><span class="dot warn"></span>pending</span></dd>
+      </dl>
+      <table style="margin-top:24px">
+        <thead><tr><th>Check</th><th>Result</th><th class="num">ms</th></tr></thead>
+        <tbody>
+          <tr><td>form → dotenv</td><td><span class="badge"><span class="dot"></span>pass</span></td><td class="num">12</td></tr>
+          <tr><td>cancel path</td><td><span class="badge"><span class="dot"></span>pass</span></td><td class="num">3</td></tr>
+          <tr><td>timeout</td><td><span class="badge"><span class="dot bad"></span>fail</span></td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">05</span><h2>Code</h2><span class="spacer"></span><span class="path">mono, recessed</span></div>
+      <pre>python3 scripts/secretform.py \
+  --name OPENAI_API_KEY --name RESEND_API_KEY \
+  --purpose "Local development" --env .env.local
+
+secretform: saved 2 value(s) to /home/me/app/.env.local (0600)</pre>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">06</span><h2>Mermaid</h2><span class="spacer"></span><span class="path">pele · css variables</span></div>
+      <div class="diagram">
+        <pre class="mermaid" data-label="Human types into a local form which writes a dotenv file">flowchart LR
+  H[Human] --&gt;|types once| F[Local form]
+  F --&gt; S[secretform]
+  S --&gt; D[dotenv]
+  D --&gt; C[consumer]</pre>
+      </div>
+      <p class="caption">Neutral: ink lines, hairline borders, no fill. Colors come from <code>--pele-*</code>, so a theme flip recolors it without a re-render.</p>
+      <div class="diagram" style="margin-top:16px">
+        <pre class="mermaid" data-label="Pipeline stages colored by status">flowchart LR
+  A[queued] --&gt; B[running]
+  B --&gt; C[written]
+  B --&gt; D[rejected]
+  classDef ok fill:#6f8f7620,stroke:#6f8f76
+  classDef warn fill:#a8873a20,stroke:#a8873a
+  classDef bad fill:#c05a5220,stroke:#c05a52
+  class B warn
+  class C ok
+  class D bad</pre>
+      </div>
+      <p class="caption">Color only as status, and only on the stroke and a 12% fill: <code>#6f8f76</code>, <code>#a8873a</code>, <code>#c05a52</code> are mid-tones measured at 3.4–4.4:1 on both paper and near-black.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">07</span><h2>Excalidraw</h2><span class="spacer"></span><span class="path">rough strokes, same ink</span></div>
+      <div class="diagram" id="excalidraw-box">
+        <div class="sketch-fallback">
+        <svg viewBox="0 0 700 190" width="100%" role="img" aria-label="Hand-drawn sketch: request, form, dotenv">
+          <g fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14,54 L176,50 L180,124 L12,128 Z" fill="var(--surface)"/>
+            <path d="M206,52 L366,57 L362,126 L202,122 Z" fill="var(--surface)"/>
+            <path d="M392,50 L556,55 L560,128 L396,124 Z" fill="#6f8f7620" stroke="#6f8f76"/>
+            <path d="M182,88 C192,86 196,90 204,88" />
+            <path d="M199,82 L207,88 L199,94" />
+            <path d="M368,90 C378,88 382,92 390,90" />
+            <path d="M385,84 L393,90 L385,96" />
+          </g>
+          <g font-family="Geist Mono, ui-monospace, monospace" font-size="11" letter-spacing="0.06em" fill="var(--ink)">
+            <text x="34" y="82">HUMAN</text>
+            <text x="226" y="82">LOCAL FORM</text>
+            <text x="412" y="82">DOTENV</text>
+          </g>
+          <g font-family="Geist, ui-sans-serif, sans-serif" font-size="12" fill="var(--muted)">
+            <text x="34" y="102">types once</text>
+            <text x="226" y="102">127.0.0.1 + token</text>
+            <text x="412" y="102" fill="#6f8f76">0600, atomic</text>
+          </g>
+        </svg>
+        </div>
+        <div id="excalidraw-light"></div>
+        <div id="excalidraw-dark"></div>
+      </div>
+      <p class="caption">Rendered from an Excalidraw scene (rectangles, arrows, text) via <code>exportToSvg</code>: irregular paths, 2px round strokes, same tokens. The static sketch above stays as the fallback when the renderer cannot load.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">08</span><h2>Layering</h2><span class="spacer"></span><span class="path">surfaces · elevation · radius</span></div>
+      <div class="surface-ladder">
+        <div class="surface canvas">canvas<br>page</div>
+        <div class="surface recessed">recessed<br>inset panel</div>
+        <div class="surface card">card<br>raised, shadow-1</div>
+        <div class="surface glass">glass<br>floating only</div>
+      </div>
+
+      <div class="nest">
+        <div class="nest-outer">
+          <div class="nest-inner">inner control</div>
+        </div>
+        <div class="math">
+          outer = inner + padding + border<br>
+          <b>14 = 5 + 8 + 1</b><br>
+          <span style="color:var(--subtle)">a 5px control inside an 8px-padded panel<br>gets a 14px outer corner</span>
+        </div>
+      </div>
+
+      <div class="elev-row">
+        <div class="elev e1">shadow-1<br>resting</div>
+        <div class="elev e2">shadow-2<br>popover</div>
+        <div class="elev e3">shadow-3<br>modal, glass</div>
+      </div>
+      <p class="caption">Borders carry structure; shadows carry elevation, and only for surfaces that float over content. Nothing on the page itself casts one.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="index">09</span><h2>Liquid glass</h2><span class="spacer"></span><span class="path">blur 20 · saturate 180 · lit rim</span></div>
+      <div class="glass-stage">
+        <div class="stage-lines" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="glass-panel">
+          <div class="micro">Popover</div>
+          <h3>Use the saved key?</h3>
+          <p class="small">OPENAI_API_KEY · written 2 minutes ago</p>
+          <div class="row">
+            <button class="btn primary" type="button">Use</button>
+            <button class="btn ghost" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Translucent surface over content, not over the page: the blur only reads when something scrolls beneath it. A 1px inner rim (white at 65% / 18%) gives the lit edge, and shadow-3 seats it.</p>
+    </section>
+
+    <footer>
+      <span>MONOCHROME · SKILLS</span>
+      <span>ONE RAMP · GEIST VIA BUNNY · PELE · EXCALIDRAW</span>
+    </footer>
+  </main>
+
+<script type="module">
+  import { mount } from "https://cdn.jsdelivr.net/npm/pele@1.3.0/dist/pele.js";
+
+  const root = document.documentElement;
+  const light = document.getElementById("light");
+  const dark = document.getElementById("dark");
+  const pixel = document.getElementById("pixel");
+  const press = (el, on) => el.setAttribute("aria-pressed", String(on));
+
+  light.onclick = () => { root.removeAttribute("data-theme"); press(light, true); press(dark, false); };
+  dark.onclick = () => { root.setAttribute("data-theme", "dark"); press(dark, true); press(light, false); };
+  pixel.onclick = () => { press(pixel, !root.classList.toggle("no-pixel")); };
+
+  await document.fonts.ready;
+  for (const el of document.querySelectorAll("pre.mermaid")) {
+    const source = el.textContent;
+    const box = document.createElement("div");
+    box.setAttribute("role", "img");
+    box.setAttribute("aria-label", el.dataset.label || "Diagram");
+    try {
+      el.replaceWith(box);
+      mount(box, source, { fontSize: 12 });
+    } catch (error) {
+      box.replaceWith(el);
+      console.error(error);
+    }
+  }
+</script>
+
+<script type="module">
+  // Real Excalidraw scene: rectangle, arrow and text elements, rendered by
+  // Excalidraw's own exportToSvg. Two exports so the ink follows the theme.
+  const loadExcalidraw = () => new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/@excalidraw/utils@0.1.2/dist/excalidraw-utils.min.js";
+    script.onload = () => resolve(window.ExcalidrawUtils);
+    script.onerror = () => reject(new Error("excalidraw utils failed to load"));
+    document.head.append(script);
+  });
+
+  const base = {
+    angle: 0, strokeColor: "#111111", backgroundColor: "transparent", fillStyle: "solid",
+    strokeWidth: 1.5, strokeStyle: "solid", roughness: 1, opacity: 100,
+    groupIds: [], boundElements: [], updated: 1, link: null, locked: false
+  };
+  const rect = (id, x, y, w, h, bg, stroke) => ({
+    ...base, id, type: "rectangle", x, y, width: w, height: h,
+    backgroundColor: bg, strokeColor: stroke, roundness: { type: 3 },
+    seed: id.length * 137, version: 1, versionNonce: 1, isDeleted: false
+  });
+  const label = (id, x, y, text, size, ink) => ({
+    ...base, id, type: "text", x, y, strokeColor: ink, width: text.length * size * 0.62, height: size * 1.25,
+    text, originalText: text, fontSize: size, fontFamily: 3, textAlign: "left",
+    verticalAlign: "top", baseline: size, containerId: null, lineHeight: 1.25,
+    seed: id.length * 31, version: 1, versionNonce: 1, isDeleted: false
+  });
+  const arrow = (id, x, y, w) => ({
+    ...base, id, type: "arrow", x, y, width: w, height: 0, points: [[0, 0], [w, 0]],
+    lastCommittedPoint: null, startBinding: null, endBinding: null,
+    startArrowhead: null, endArrowhead: "arrow", seed: id.length * 17,
+    version: 1, versionNonce: 1, isDeleted: false
+  });
+
+  const scene = (ink, card, ok) => [
+    rect("r1", 0, 0, 170, 64, card, ink),
+    label("t1", 16, 14, "HUMAN", 13, ink),
+    label("t2", 16, 36, "types once", 11, ink),
+    arrow("a1", 176, 32, 58),
+    rect("r2", 240, 0, 186, 64, card, ink),
+    label("t3", 256, 14, "LOCAL FORM", 13, ink),
+    label("t4", 256, 36, "127.0.0.1 + token", 11, ink),
+    arrow("a2", 432, 32, 58),
+    rect("r3", 496, 0, 170, 64, ok + "20", ok),
+    label("t5", 512, 14, "DOTENV", 13, ink),
+    label("t6", 512, 36, "0600, atomic", 11, ink)
+  ];
+
+  const { exportToSvg } = await loadExcalidraw();
+
+  async function build(ink, card, ok) {
+    const svg = await exportToSvg({
+      elements: scene(ink, card, ok),
+      appState: { exportBackground: false, viewBackgroundColor: "transparent" },
+      files: null
+    });
+    const parsed = new DOMParser().parseFromString(svg.outerHTML, "image/svg+xml");
+    return document.importNode(parsed.documentElement, true);
+  }
+
+  try {
+    const [lightSvg, darkSvg] = await Promise.all([
+      build("#111111", "#ffffff", "#6f8f76"),
+      build("#ededed", "#1b1b1f", "#6f8f76")
+    ]);
+    document.getElementById("excalidraw-light").replaceChildren(lightSvg);
+    document.getElementById("excalidraw-dark").replaceChildren(darkSvg);
+    document.querySelector(".sketch-fallback").remove();
+  } catch (error) {
+    console.error("excalidraw render failed", error);
+  }
+</script>
+</body>
+</html>
