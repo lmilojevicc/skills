@@ -244,11 +244,11 @@
       <div class="diagram">
         <pre class="mermaid" data-label="Flowchart: login form to auth service; valid credentials issue a JWT and establish a session, invalid ones are rejected with 401">
 flowchart TD
-  A["Login form"] --> B["Auth service"]
-  B --> C{"Valid credentials?"}
-  C -->|Yes| D["Issue JWT"]
-  C -->|No| E["Reject with 401"]
-  D --> F["Session established"]
+  A["Login form"] --&gt; B["Auth service"]
+  B --&gt; C{"Valid credentials?"}
+  C --&gt;|Yes| D["Issue JWT"]
+  C --&gt;|No| E["Reject with 401"]
+  D --&gt; F["Session established"]
   class D,F focal
         </pre>
       </div>
