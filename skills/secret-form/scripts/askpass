@@ -1,0 +1,20 @@
+#!/bin/sh
+# Generic askpass helper for ssh, ssh-add, sshfs, rsync and sudo -A.
+#
+# The consumer invokes this program with the prompt in $1 and reads the answer
+# from its first line of stdout. Everything diagnostic must go to stderr: a
+# stray stdout byte corrupts the answer.
+#
+# Point ANSWER_VAR at any variable that is already in this process's environment
+# (secretbroker injects it there). The value is never echoed or logged.
+set -eu
+
+: "${ANSWER_VAR:?set ANSWER_VAR to the name of the variable holding the answer}"
+
+# Command substitution strips the trailing newlines the value must not carry.
+if command -v printenv >/dev/null 2>&1; then
+  value=$(printenv "$ANSWER_VAR" | head -c 1024)
+else
+  value=$(awk 'BEGIN { printf "%s", ENVIRON[var] }' var="$ANSWER_VAR" | head -c 1024)
+fi
+printf '%s\n' "$value"

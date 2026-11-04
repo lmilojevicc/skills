@@ -1,0 +1,17 @@
+{
+  "name": "secret-form",
+  "version": "0.1.0",
+  "description": "Agent skill: collect secrets in a local web form and write them to a dotenv file without exposing them to the model",
+  "keywords": [
+    "pi-package",
+    "agent-skills",
+    "secrets",
+    "security"
+  ],
+  "license": "MIT",
+  "pi": {
+    "skills": [
+      "."
+    ]
+  }
+}
